@@ -135,63 +135,64 @@ function thx_activate()
 			'name'         => 'thx_buttons.css',
 			'tid'          => $themetid['tid'],
 			'stylesheet'   => $db->escape_string('.thx_buttons{
-    background: #F1F1F1;
-	border: 1px solid #DCDCDC;
-	padding: 10px 5px 10px 5px;
-    margin: 10px;
-	border-radius: 2px;
-	-moz-border-radius: 2px;
-	-webkit-border-radius: 2px;
+		background: #F1F1F1;
+		border: 1px solid #DCDCDC;
+		padding: 10px 5px 10px 5px;
+		margin: 10px;
+		border-radius: 2px;
+		-moz-border-radius: 2px;
+		-webkit-border-radius: 2px;
 }
 
 #gracias a{
-    color: #4F8A10;
-	text-decoration: none;	   
+		color: #4F8A10;
+		text-decoration: none;	   
 }
 
 #egracias a{
-	color: #D8000C;
-	text-decoration: none;
+		color: #D8000C;
+		text-decoration: none;
 }
 
 .bad_thx{
-	color: #D8000C;
-	font-family: \'Lucida Console\';
-	font-size: 12px;
-	font-weight: bold;
-	text-decoration: none;
-	background: none repeat scroll 0% 0% rgb(216, 227, 237);
-	border: 2px solid rgb(189, 225, 253);
-	box-shadow: 0px 0px 1em rgb(182, 182, 182);
-	border-radius: 4px;
-	padding: 3px 5px;
+		color: #D8000C;
+		font-family: \'Lucida Console\';
+		font-size: 12px;
+		font-weight: bold;
+		text-decoration: none;
+		background: none repeat scroll 0% 0% rgb(216, 227, 237);
+		border: 2px solid rgb(189, 225, 253);
+		box-shadow: 0px 0px 1em rgb(182, 182, 182);
+		border-radius: 4px;
+		padding: 3px 5px;
 }
 
 .neutral_thx{
-	color: #424242;
-	font-family: \'Lucida Console\';
-	font-size: 12px;
-	font-weight: bold;
-	text-decoration: none;
-	background: none repeat scroll 0% 0% rgb(216, 227, 237);
-	border: 2px solid rgb(189, 225, 253);
-	box-shadow: 0px 0px 1em rgb(182, 182, 182);
-	border-radius: 4px;
-	padding: 3px 5px;
+		color: #424242;
+		font-family: \'Lucida Console\';
+		font-size: 12px;
+		font-weight: bold;
+		text-decoration: none;
+		background: none repeat scroll 0% 0% rgb(216, 227, 237);
+		border: 2px solid rgb(189, 225, 253);
+		box-shadow: 0px 0px 1em rgb(182, 182, 182);
+		border-radius: 4px;
+		padding: 3px 5px;
 }
 
 .good_thx{
-	color: #4F8A10;
-	font-family: \'Lucida Console\';
-	font-size: 12px;
-	font-weight: bold;
-	text-decoration: none;
-	background: none repeat scroll 0% 0% rgb(216, 227, 237);
-	border: 2px solid rgb(189, 225, 253);
-	box-shadow: 0px 0px 1em rgb(182, 182, 182);
-	border-radius: 4px;
-	padding: 3px 5px;	
+		color: #4F8A10;
+		font-family: \'Lucida Console\';
+		font-size: 12px;
+		font-weight: bold;
+		text-decoration: none;
+		background: none repeat scroll 0% 0% rgb(216, 227, 237);
+		border: 2px solid rgb(189, 225, 253);
+		box-shadow: 0px 0px 1em rgb(182, 182, 182);
+		border-radius: 4px;
+		padding: 3px 5px;	
 }
+
 .info_thx, .exito_thx, .alerta_thx, .error_thx {
        font-family:Arial, Helvetica, sans-serif;
        font-size:13px;
@@ -204,24 +205,55 @@ function thx_activate()
 	   font-weight: bold;
 	   border-radius: 5px;
 }
+
 .info_thx {
        color: #00529B;
        background-color: #BDE5F8;
        background-image: url(images/info.png);
 }
+
 .exito_thx {
        background-color: #DFF2BF;
        background-image:url(images/exito.png);
 }
+
 .alerta_thx {
        color: #9F6000;
        background-color: #FEEFB3;
        background-image: url(images/alerta.png);
 }
+
 .error_thx {
        color: #D8000C;
        background-color: #FFBABA;
        background-image: url(images/error.png);
+}
+
+.thx_hideshow_btn{
+	   background-color:  rgb(0, 102, 140);
+	   background-image:linear-gradient(top, rgb(0, 102, 140), rgb(239, 242, 250));
+	   background-image:-o-linear-gradient(top, rgb(0, 102, 140), rgb(239, 242, 250));
+	   color: #fff;
+	   border:1px solid #dcdcdc;
+	   border:1px solid rgba(0, 0, 0, 0.1);
+	   border-radius:2px;
+	   font-family:verdana,sans-serif,arial;
+	   font-size:11px;
+	   font-weight:bold;
+	   height:29px;
+	   line-height:27px;
+	   margin:11px 6px;
+	   min-width:54px;
+	   padding:0 8px;
+	   text-align:center;
+}
+
+.thx_hideshow_btn:hover {
+	   background-color:rgb(0, 90, 134);
+	   background-image:linear-gradient(top,rgb(0, 90, 134),rgb(0, 90, 114));
+	   background-image:-o-linear-gradient(top,rgb(0, 90, 134),rgb(0, 100, 114));
+	   color: #fff;
+	   cursor: pointer;
 }'),
 			'lastmodified' => TIME_NOW
 		);
@@ -270,7 +302,7 @@ function thx_activate()
 	$templatearray = array(
 		'title' => 'thanks_postbit_outline',
 		'template' => "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\" id=\"thx{\$post[\'pid\']}\" style=\"{\$display_style};margin-top:5px;\"><tr><td>
-        <div id=\"dn_thx_list{\$post[\'pid\']}\"><div class=\"smallfont\" align=\"center\"><input type=\"button\" value=\"{\$lang->thx_show_thanks}\" style=\"background-color:#f5f5f5; background-image:linear-gradient(top,#f5f5f5,#f1f1f1); background-image:-o-linear-gradient(top,#f5f5f5,#f1f1f1); border:1px solid #dcdcdc;border:1px solid rgba(0, 0, 0, 0.1); border-radius:2px; color:#666; cursor:default; font-family:arial,sans-serif; font-size:11px; font-weight:bold; height:29px; line-height:27px; margin:11px 6px; min-width:54px; padding:0 8px; text-align:center\" onClick=\"if (this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display != \'\') { this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display = \'\'; this.innerText = \'\'; this.value = \'{\$lang->thx_hide_thanks}\'; } else { this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display = \'none\'; this.innerText = \'\'; this.value = \'{\$lang->thx_show_thanks}\'; }\"></div><div class=\"alt2\"><div style=\"display: none;\">
+        <div id=\"dn_thx_list{\$post[\'pid\']}\"><div class=\"smallfont\" align=\"center\"><input type=\"button\" value=\"{\$lang->thx_show_thanks}\" class=\"thx_hideshow_btn\" onClick=\"if (this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display != \'\') { this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display = \'\'; this.innerText = \'\'; this.value = \'{\$lang->thx_hide_thanks}\'; } else { this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display = \'none\'; this.innerText = \'\'; this.value = \'{\$lang->thx_show_thanks}\'; }\"></div><div class=\"alt2\"><div style=\"display: none;\">
         <table border=\"0\" cellspacing=\"{\$theme[\'borderwidth\']}\" cellpadding=\"{\$theme[\'tablespace\']}\" class=\"tborder thxdsp_outline\"><tr class=\"trow1 tnx_style\"><td valign=\"top\" width=\"1%\" nowrap=\"nowrap\"><img src=\"{\$mybb->settings[\'bburl\']}/images/gracias.png\" align=\"absmiddle\" /> &nbsp;<span class=\"smalltext\">{\$lang->thx_givenby}</span></td><td class=\"trow2 tnx_style\" id=\"thx_list{\$post[\'pid\']}\" align=\"left\">\$entries</td></tr></table></div></div></div>
         </td></tr></table>",
 		'sid' => '-1',
@@ -517,6 +549,20 @@ function thx_code(&$message)
 
 		$forum_fid = explode(',', $mybb->settings['thx_hidesystem_fid']);
         $hide_tag = $mybb->settings['thx_hidesystem_tag'];
+
+		if(THIS_SCRIPT == "syndication.php"){
+		   $msg = $lang->thx_hide_sindycation; 
+		   eval("\$caja = \"".$templates->get("thanks_guests_tag",1,0)."\";");		  
+		   $message = preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is",$caja,$message);	
+		}
+		
+		if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
+		{
+			$lang->load("thx");
+		}
+		else{
+		echo 'You have to add lang files propertly';}
+
         if($forum['fid'] == 0 || $forum['fid'] == ''){$forum['fid'] = $fid;}
 		if($post['pid'] == 0 || $post['pid'] == ''){
 		switch(THIS_SCRIPT)
@@ -532,14 +578,7 @@ function thx_code(&$message)
         $forum_gid = explode(',', $mybb->settings['thx_hidesystem_gid']);
 		$forum_notgid = explode(',', $mybb->settings['thx_hidesystem_notgid']);
 		$url = $mybb->settings['bburl'];
-		
-	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
-	{
-		$lang->load("thx");
-	}
-	else{
-	echo 'You have to add lang files propertly';}
-	
+			
       if(in_array($mybb->user['usergroup'], $forum_gid))
       {
 	   $msg = "$1";
