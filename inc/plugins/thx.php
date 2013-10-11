@@ -287,7 +287,7 @@ function thx_activate()
 
 	$templatearray = array(
 		'title' => 'thanks_postbit_inline',
-		'template' => "<tr id=\"thx{\$post[\'pid\']}\" style=\"{\$display_style}\" class=\"trow2 tnx_style tnx_newstl\"><td><span class=\"smalltext\">{\$lang->thx_givenby}</span>&nbsp;<span id=\"thx_list{\$post[\'pid\']}\">\$entries</span></td></tr>",
+		'template' => "<tr id=\"thx{\$post[\'pid\']}\" style=\"{\$display_style}\" class=\"trow2 tnx_style tnx_newstl\"><td colspan=\"2\"><span class=\"smalltext\">{\$lang->thx_givenby}</span>&nbsp;<span id=\"thx_list{\$post[\'pid\']}\">\$entries</span></td></tr>",
 		'sid' => '-1',
 		);	
 	$db->insert_query("templates", $templatearray);
