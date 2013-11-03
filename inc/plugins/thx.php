@@ -1,14 +1,15 @@
 <?php
 /**
   * Thank you 2.2
-  * Upgrade for MyBB 1.6.x (actually 1.6.10)
+  * Upgrade for MyBB 1.6.x (actually 1.6.11)
   * www.soportemybb.com
   * Autor: Dark Neo
+  * baseed on SaeedGh 3.9.1 thanks plugin.
 */
 
 if(!defined("IN_MYBB"))
 {
-	die("No se permite la inicialización directa de este archivo.");
+	die("You can not access this file directly.");
 }
 
 if(isset($GLOBALS['templatelist']))
@@ -43,7 +44,7 @@ function thx_info()
 
 	if (count($db->fetch_array($query)))
 	{
-		$thx_config_link = '(<a href="index.php?module=config&action=change&search=Gracias" style="color:#035488; background: url(../images/usercp/options.gif) no-repeat 0px 18px; padding: 18px; text-decoration: none;"> '. $db->escape_string($lang->thx_config) . '</a>)';
+		$thx_config_link = '<div style="float: right;"><a href="index.php?module=config&action=change&search=Gracias" style="color:#035488; background: url(../images/usercp/options.gif) no-repeat 0px 18px; padding: 18px; text-decoration: none;"> '. $db->escape_string($lang->thx_config) . '</a></div>';
 	}
 
 	return array(
@@ -135,21 +136,31 @@ function thx_activate()
 			'name'         => 'thx_buttons.css',
 			'tid'          => $themetid['tid'],
 			'stylesheet'   => $db->escape_string('.thx_buttons{
+		color: #424242;
 		background: #F1F1F1;
-		border: 1px solid #DCDCDC;
-		padding: 10px 5px 10px 5px;
-		margin: 10px;
-		border-radius: 2px;
-		-moz-border-radius: 2px;
-		-webkit-border-radius: 2px;
+		border: 1px solid #424242;
+		padding: 6px 9px;
+		margin: -27px 5px;
+		border-radius: 4px;
+		text-decoration: none;
+		position: absolute;
+		font-family: Verdana, Tahoma, Sans-Serif;
+		font-size: 10px;
+		font-weight: bold;
 }
 
-#gracias a{
+.thx_buttons:hover,
+.thx_buttons:active{
+		background: rgb(222, 255, 200);
+		color: #4F8A10;
+}
+
+.gracias a{
 		color: #4F8A10;
 		text-decoration: none;	   
 }
 
-#egracias a{
+.egracias a{
 		color: #D8000C;
 		text-decoration: none;
 }
@@ -232,10 +243,9 @@ function thx_activate()
 .thx_hideshow_btn{
 	   background-color:  rgb(0, 102, 140);
 	   background-image:linear-gradient(top, rgb(0, 102, 140), rgb(239, 242, 250));
-	   background-image:-o-linear-gradient(top, rgb(0, 102, 140), rgb(239, 242, 250));
 	   color: #fff;
-	   border:1px solid #dcdcdc;
-	   border:1px solid rgba(0, 0, 0, 0.1);
+	   border:1px solid rgb(0, 112, 140);
+	   border:1px solid rgba(14, 20, 90, 0.1);
 	   border-radius:2px;
 	   font-family:verdana,sans-serif,arial;
 	   font-size:11px;
@@ -248,12 +258,19 @@ function thx_activate()
 	   text-align:center;
 }
 
-.thx_hideshow_btn:hover {
+.thx_hideshow_btn:hover,
+.thx_hideshow_btn:active {
 	   background-color:rgb(0, 90, 134);
 	   background-image:linear-gradient(top,rgb(0, 90, 134),rgb(0, 90, 114));
-	   background-image:-o-linear-gradient(top,rgb(0, 90, 134),rgb(0, 100, 114));
+	   font-size:11px;
+	   font-weight:bold;
 	   color: #fff;
 	   cursor: pointer;
+	   height:29px;
+	   line-height:27px;
+	   margin:11px 6px;
+	   min-width:54px;
+	   padding:0 8px;
 }'),
 			'lastmodified' => TIME_NOW
 		);
@@ -301,10 +318,27 @@ function thx_activate()
 
 	$templatearray = array(
 		'title' => 'thanks_postbit_outline',
-		'template' => "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\" id=\"thx{\$post[\'pid\']}\" style=\"{\$display_style};margin-top:5px;\"><tr><td>
-        <div id=\"dn_thx_list{\$post[\'pid\']}\"><div class=\"smallfont\" align=\"center\"><input type=\"button\" value=\"{\$lang->thx_show_thanks}\" class=\"thx_hideshow_btn\" onClick=\"if (this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display != \'\') { this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display = \'\'; this.innerText = \'\'; this.value = \'{\$lang->thx_hide_thanks}\'; } else { this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display = \'none\'; this.innerText = \'\'; this.value = \'{\$lang->thx_show_thanks}\'; }\"></div><div class=\"alt2\"><div style=\"display: none;\">
-        <table border=\"0\" cellspacing=\"{\$theme[\'borderwidth\']}\" cellpadding=\"{\$theme[\'tablespace\']}\" class=\"tborder thxdsp_outline\"><tr class=\"trow1 tnx_style\"><td valign=\"top\" width=\"1%\" nowrap=\"nowrap\"><img src=\"{\$mybb->settings[\'bburl\']}/images/gracias.png\" align=\"absmiddle\" /> &nbsp;<span class=\"smalltext\">{\$lang->thx_givenby}</span></td><td class=\"trow2 tnx_style\" id=\"thx_list{\$post[\'pid\']}\" align=\"left\">\$entries</td></tr></table></div></div></div>
-        </td></tr></table>",
+		'template' => "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\" id=\"thx{\$post[\'pid\']}\" style=\"{\$display_style};margin-top:5px;\">
+	<tr>
+		<td>
+			<div class=\"smallfont\" align=\"center\">
+				<input type=\"button\" value=\"{\$lang->thx_show_thanks}\" class=\"thx_hideshow_btn\" onclick=\"if (this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display != \'\') { this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display = \'\'; this.value = \'{\$lang->thx_hide_thanks}\'; } else { this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display = \'none\'; this.value = \'{\$lang->thx_show_thanks}\'; }\" />
+			</div>
+			<div class=\"alt2\">				
+				<div id=\"dn_thx_list{\$post[\'pid\']}\" style=\"display:none;\">
+					<table border=\"0\" cellspacing=\"{\$theme[\'borderwidth\']}\" cellpadding=\"{\$theme[\'tablespace\']}\" class=\"tborder thxdsp_outline\">
+						<tr class=\"trow1 tnx_style\">
+							<td valign=\"top\" width=\"1%\" nowrap=\"nowrap\">
+								<img src=\"{\$mybb->settings[\'bburl\']}/images/gracias.png\" align=\"absmiddle\" /> &nbsp;<span class=\"smalltext\">{\$lang->thx_givenby}</span>
+							</td>
+							<td class=\"trow2 tnx_style\" id=\"thx_list{\$post[\'pid\']}\" align=\"left\">\$entries</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</td>
+	</tr>
+</table>",
 		'sid' => '-1',
 		);
 	$db->insert_query("templates", $templatearray);
@@ -548,13 +582,18 @@ function thx_code(&$message)
         }
 
 		$forum_fid = explode(',', $mybb->settings['thx_hidesystem_fid']);
-        $hide_tag = $mybb->settings['thx_hidesystem_tag'];
-
+        $forum_gid = explode(',', $mybb->settings['thx_hidesystem_gid']);
+		$forum_notgid = explode(',', $mybb->settings['thx_hidesystem_notgid']);
+		$url = $mybb->settings['bburl'];
+        $hide_tag = $mybb->settings['thx_hidesystem_tag'];	
+		
 		if(THIS_SCRIPT == "syndication.php"){
 		   $msg = $lang->thx_hide_sindycation; 
 		   eval("\$caja = \"".$templates->get("thanks_guests_tag",1,0)."\";");		  
 		   $message = preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is",$caja,$message);	
 		}
+		
+		if($forum['fid'] == 0 || $forum['fid'] == ''){$forum['fid'] = $fid;}
 		
 		if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
 		{
@@ -563,36 +602,33 @@ function thx_code(&$message)
 		else{
 		echo 'You have to add lang files propertly';}
 
-        if($forum['fid'] == 0 || $forum['fid'] == ''){$forum['fid'] = $fid;}
 		if($post['pid'] == 0 || $post['pid'] == ''){
 		switch(THIS_SCRIPT)
 		{
 		case "printthread.php" : $post['pid'] = $postrow['pid'];break;
-		case "portal.php" : $post['pid'] = $announcement['pid'];break;
+		case "portal.php" : $post['pid'] = $announcement['pid'];$forum_fid = $announcement['fid'];break;
 		default: $post['pid'] = $pid;
 		}
 		}
-        if(!in_array($forum['fid'],$forum_fid)){return false;}
 		
         $must_thanks = $mybb->settings['thx_hidesystem_code'];
-        $forum_gid = explode(',', $mybb->settings['thx_hidesystem_gid']);
-		$forum_notgid = explode(',', $mybb->settings['thx_hidesystem_notgid']);
-		$url = $mybb->settings['bburl'];
+
+    if(!in_array($forum['fid'],$forum_fid)){return false;}
 			
-      if(in_array($mybb->user['usergroup'], $forum_gid))
-      {
-	   $msg = "$1";
-	   eval("\$caja = \"".$templates->get("thanks_admins_tag",1,0)."\";");		  
-       $message = preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is",$caja,$message);      
-	  }
+    if(in_array($mybb->user['usergroup'], $forum_gid))
+    {
+	  $msg = "$1";
+	  eval("\$caja = \"".$templates->get("thanks_admins_tag",1,0)."\";");		  
+      $message = preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is",$caja,$message);      
+	}
       
-     else if(in_array($mybb->user['usergroup'], $forum_notgid) || $mybb->user['uid'] == 0)
-      {	 
+    else if(in_array($mybb->user['usergroup'], $forum_notgid) || $mybb->user['uid'] == 0)
+    {	 
 	   $msg = $lang->thx_hide_register; 
 	   eval("\$caja = \"".$templates->get("thanks_guests_tag",1,0)."\";");		  
 	   $message = preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is",$caja,$message);
-      }
-      else{
+    }
+    else{
 
 	  if ($mybb->user['uid'] == $post['uid'])
        {
@@ -644,7 +680,7 @@ function thx_quote(&$quoted_post)
           return false;
         }
 
-        if ($mybb->settings['thx_hidesystem'] == '1'){
+        if ($mybb->settings['thx_hidesystem'] == '1' && $mybb->settings['thx_hidetag'] == '1'){
 		  $hide_tag = $mybb->settings['thx_hidesystem_tag'];	
           $quoted_post['message'] = preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is","", $quoted_post['message']);
         }
@@ -659,12 +695,17 @@ function thx(&$post)
 		return false;
 	}
 	
-        $forum_fid = explode(',', $mybb->settings['thx_hidesystem_fid']);
+    $forum_fid = explode(',', $mybb->settings['thx_hidesystem_fid']);
         
-        if(!in_array($forum['fid'],$forum_fid))
-        {
-			return false;
-		}    		
+    if(!in_array($forum['fid'],$forum_fid))
+    {
+		return false;
+	}    		
+
+    $forum_notgid = explode(',', $mybb->settings['thx_hidesystem_notgid']);
+	if(in_array($mybb->user['usergroup'], $forum_notgid) && THIS_SCRIPT == "showthread.php"){
+	return false;
+	}
 
 	if ($mybb->settings['thx_hidesystem'] != 0)
 
@@ -697,7 +738,6 @@ function thx(&$post)
 	else{$count="";}
 	if($mybb->user['uid'] == $post['uid']){
 	$post['thanks'] = $count;
-	$display_style = $entries ?  "" : "display:none; border:0;";
 	$playout = $mybb->settings['postlayout'];	
 	if(!$mybb->settings['thx_outline'])
 	{
@@ -718,37 +758,22 @@ function thx(&$post)
 	    $post['button_rep'] = "";
 		if(!$b)
 		{
-			$post['thanks'] = "<span id=\"gracias\" class=\"buttons\"><a id=\"a{$post['pid']}\" onclick=\"javascript: ThankYou.thx({$post['pid']}); \" href=\"showthread.php?action=thank&tid={$post['tid']}&pid={$post['pid']}\" class=\"positive\">
-			 $count {$lang->thx_button_add}</a></span>";
+			$post['thanks'] = "<a id=\"a{$post['pid']}\" onclick=\"javascript:return thx({$post['pid']});\" href=\"showthread.php?action=thank&tid={$post['tid']}&pid={$post['pid']}\" class=\"gracias\">
+			 <span class=\"thx_buttons\" id=\"sp{$post['pid']}\">$count {$lang->thx_button_add}</span></a>";
+			$display_style = "display: none";
 		}
 		else if($mybb->settings['thx_del'] == "1")
 		{
-			$post['thanks'] = "<span id=\"egracias\" class=\"buttons\"><a id=\"a{$post['pid']}\" onclick=\"javascript: ThankYou.rthx({$post['pid']}); \" href=\"showthread.php?action=remove_thank&tid={$post['tid']}&pid={$post['pid']}\" class=\"negative\">
-			$count {$lang->thx_button_del}</a></span>";
-			$display_style = $entries ?  "" : "display:none; border:0;";
-			$playout = $mybb->settings['postlayout'];
-		
-			if(!$mybb->settings['thx_outline'])
-			{
-				eval("\$post['thxdsp_inline'] .= \"".$templates->get("thanks_postbit_inline")."\";");
-											
-				if($mybb->settings['thx_autolayout'] && $playout == "classic")
-				{
-					eval("\$post['thxdsp_inline'] .= \"".$templates->get("thanks_postbit_inline_classic")."\";");
-				}
-			}
-			else
-			{	
-				eval("\$post['thxdsp_outline'] .= \"".$templates->get("thanks_postbit_outline")."\";");
-			}
-			 
-	    }	
+			$post['thanks'] = "<a id=\"a{$post['pid']}\" onclick=\"javascript:return rthx({$post['pid']});\" href=\"showthread.php?action=remove_thank&tid={$post['tid']}&pid={$post['pid']}\" class=\"egracias\">
+			<span class=\"thx_buttons\" id=\"sp{$post['pid']}\">$count {$lang->thx_button_del}</span></a>";	 
+			$display_style = "display: inline-table";
+		}	
 		else
 		{
-			$post['thanks'] = $count;
-			$display_style = $entries ?  "" : "display:none; border:0;";
+			$post['thanks'] = "<a id=\"a{$post['pid']}\" class=\"gracias\" href=\"showthread.php?tid={$post['tid']}&pid={$post['pid']}\"><span class=\"thx_buttons\" id=\"sp{$post['pid']}\">$count</span></a>";
+		}
 			$playout = $mybb->settings['postlayout'];
-		
+			
 			if(!$mybb->settings['thx_outline'])
 			{
 				eval("\$post['thxdsp_inline'] .= \"".$templates->get("thanks_postbit_inline")."\";");
@@ -762,7 +787,7 @@ function thx(&$post)
 			{	
 				eval("\$post['thxdsp_outline'] .= \"".$templates->get("thanks_postbit_outline")."\";");
 			}
-		}
+
 	}
     }
 		
@@ -782,24 +807,46 @@ function thx(&$post)
 
 function do_action()
 {
-	global $mybb, $lang, $theme, $templates, $thread, $post, $attachcache, $pid,$tid;
+	global $mybb, $lang, $theme, $templates, $thread, $post, $attachcache, $parser, $pid,$tid;
 	
 	if(($mybb->input['action'] != "thankyou"  &&  $mybb->input['action'] != "remove_thankyou") || $mybb->request_method != "post")
 	{
 		return false;
 	}
 		
+    $forum_notgid = explode(',', $mybb->settings['thx_hidesystem_notgid']);
+	if(in_array($mybb->user['usergroup'], $forum_notgid) && THIS_SCRIPT == "showthread.php"){
+	return false;
+	}
+	
 	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
 	{
 		$lang->load("thx");
 	}
 	else{
 	echo 'You have to add lang files propertly';}
+
+	$post = get_post($mybb->input['pid']);
+	
+	if(!$post['pid'])
+	{
+		xmlhttp_error($lang->post_doesnt_exist);
+	}
+	
+	$thread = get_thread($post['tid']);
+	$forum = get_forum($thread['fid']);
+	$fid = $forum['fid'];
+	$tid = $forum['tid'];
+	$pid = $forum['pid'];
 	
 	$pid = intval($mybb->input['pid']);
 	$tid = intval($mybb->input['tid']);
+
+    if(!verify_post_check($mybb->input['my_post_key'])){
+		xmlhttp_error("Usted no puede agradecer en los mensajes");
+	}
 	
-	if ($mybb->input['action'] == "thankyou" )
+	if ($mybb->input['action'] == "thankyou")
 	{
 		do_thank($pid);
 	}
@@ -810,13 +857,73 @@ function do_action()
 	
 	$nonead = 0;
 	$list = build_thank($pid, $nonead);
+	if($mybb->settings['thx_counter'] == "1"){
+	$count = 0;
+	$total = explode(',',$list);
+	$count = count($total) - 1;
+	if ($count == 0){$count="<span class=\"neutral_thx\">".$count."</span>";}
+	else if ($count >= 1){$count="<span class=\"good_thx\">".$count."</span>";}
+	else {$count="<span class=\"bad_thx\"".$count."</span>";}
+	}
+	else{
+	$count = "";
+	}
+	require_once MYBB_ROOT."inc/functions_post.php";
+	if(!$parser)
+	{
+		require_once MYBB_ROOT."inc/class_parser.php";
+		$parser = new postParser;
+	}
+	$parser_options = array(
+			"allow_html" => $forum['allowhtml'],
+			"allow_mycode" => $forum['allowmycode'],
+			"allow_smilies" => $forum['allowsmilies'],
+			"allow_imgcode" => $forum['allowimgcode'],
+			"allow_videocode" => $forum['allowvideocode'],
+			"me_username" => $post['username'],
+			"filter_badwords" => 1
+		);
+	$post = $parser->parse_message($post['message'], $parser_options);
 	header('Content-Type: text/xml');
+
+	if(!$mybb->settings['thx_del']){
 	$output = "<thankyou>
-				<list><![CDATA[$list]]></list>
+				<list><![CDATA[{$list}]]></list>
 				<display>".($list ? "1" : "0")."</display>
-			  <del>{$mybb->settings['thx_del']}</del>	
+				<button><![CDATA[{$count} ";	
+	if($mybb->input['action'] == "thankyou")
+	{
+		$output .= "";
+	}
+	else if($mybb->settings['thx_del'] == "1")
+	{
+		$output .= "<span class=\"gracias\">{$lang->thx_button_add}</span>";
+	}	
+	$output .= "]]></button>
+			    <post><![CDATA[$post]]></post>	
+				<del>{$mybb->settings['thx_del']}</del>	
+			 </thankyou>";
+	echo $output;	
+	}
+	else{
+	$output = "<thankyou>
+				<list><![CDATA[{$list}]]></list>
+				<display>".($list ? "1" : "0")."</display>
+				<button><![CDATA[{$count} ";	
+	if($mybb->input['action'] == "thankyou")
+	{
+		$output .= "<span class=\"egracias\">{$lang->thx_button_del}</span>";
+	}
+	else if($mybb->settings['thx_del'] == "1")
+	{
+		$output .= "<span class=\"gracias\">{$lang->thx_button_add}</span>";
+	}	
+	$output .= "]]></button>
+			    <post><![CDATA[$post]]></post>	
+				<del>{$mybb->settings['thx_del']}</del>	
 			 </thankyou>";
 	echo $output;
+	}
 }
 
 function direct_action()
@@ -827,7 +934,12 @@ function direct_action()
 	{
 		return false;
 	}
-		
+
+    $forum_notgid = explode(',', $mybb->settings['thx_hidesystem_gid']);
+	if(in_array($mybb->user['usergroup'], $forum_notgid)){
+	return false;
+	}
+	
 	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
 	{
 		$lang->load("thx");
@@ -845,7 +957,9 @@ function direct_action()
 	{
 		del_thank($pid);
 	}
-	 redirect(get_post_link($pid, $tid)."#pid{$pid}");
+	
+	redirect(get_post_link($pid, $tid)."#pid{$pid}");
+
 }
 
 function build_thank(&$pid, &$is_thx)
@@ -886,11 +1000,11 @@ function build_thank(&$pid, &$is_thx)
             $avatar = $record['avatar'];
             if($avatar != '')
             {
-			$thx_cache['showname'][$record['username']] = "<a href=\"$url\" dir=\"$dir\"><img src=\"$avatar\" style=\"width: 19px; height: 19px; border-style: double; color: #D8DFEA; padding: 2px; background-color: #FCFDFD; border-radius: 4px; -ms-border-radius: 4px; -moz-border-radius: 4px; webkit-border-radius: 4px;\"> $name</a>";
+			$thx_cache['showname'][$record['username']] = "<a href=\"$url\" dir=\"$dir\"><img src=\"$avatar\" style=\"width: 19px; height: 19px; border-style: double; color: #D8DFEA; padding: 2px; background-color: #FCFDFD; border-radius: 4px;\"> $name</a>";
             }
             else
             {
-            $thx_cache['showname'][$record['username']] = "<a href=\"$url\" dir=\"$dir\"><img src=\"images/default_avatar.gif\" style=\"width: 19px; height: 19px; border-style: double; color: #D8DFEA; padding: 2px; background-color: #FCFDFD; border-radius: 4px; -ms-border-radius: 4px; -moz-border-radius: 4px; webkit-border-radius: 4px;\">$name</a>";
+            $thx_cache['showname'][$record['username']] = "<a href=\"$url\" dir=\"$dir\"><img src=\"images/default_avatar.gif\" style=\"width: 19px; height: 19px; border-style: double; color: #D8DFEA; padding: 2px; background-color: #FCFDFD; border-radius: 4px;\">$name</a>";
             }
 		}
 
