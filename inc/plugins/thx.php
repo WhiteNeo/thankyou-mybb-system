@@ -2,7 +2,7 @@
 /**
   * Thank you 2.2
   * Upgrade for MyBB 1.6.x (actually 1.6.11)
-  * www.soportemybb.com
+  * darkneo.skn1.com
   * Autor: Dark Neo
   * baseed on SaeedGh 3.9.1 thanks plugin.
 */
@@ -50,7 +50,7 @@ function thx_info()
 	return array(
 		'name'			=>	$db->escape_string($lang->thx_title),
 		'description'	=>	$db->escape_string($lang->thx_desc) . $thx_config_link,
-		'website'		=>	'http://www.soportemybb.com',
+		'website'		=>	'http://www.darkneo.skn1.com',
 		'author'		=>	'Dark Neo',
 		'authorsite'	=>	'http://darkneo.skn1.com',
 		'version'		=>	'2.2',
@@ -140,7 +140,7 @@ function thx_activate()
 		background: #F1F1F1;
 		border: 1px solid #424242;
 		padding: 6px 9px;
-		margin: -27px 5px;
+		margin: -2px 2px;
 		border-radius: 4px;
 		text-decoration: none;
 		position: absolute;
@@ -304,14 +304,14 @@ function thx_activate()
 
 	$templatearray = array(
 		'title' => 'thanks_postbit_inline',
-		'template' => "<tr id=\"thx{\$post[\'pid\']}\" style=\"{\$display_style}\" class=\"trow2 tnx_style tnx_newstl\"><td colspan=\"2\"><span class=\"smalltext\">{\$lang->thx_givenby}</span>&nbsp;<span id=\"thx_list{\$post[\'pid\']}\">\$entries</span></td></tr>",
+		'template' => "<tr id=\"thx{\$post[\'pid\']}\" style=\"{\$display_style}\" class=\"{\$altbg}\"><td colspan=\"2\"><span class=\"smalltext\">{\$lang->thx_givenby}</span>&nbsp;<span id=\"thx_list{\$post[\'pid\']}\">\$entries</span></td></tr>",
 		'sid' => '-1',
 		);	
 	$db->insert_query("templates", $templatearray);
 	
 	$templatearray = array(
 		'title' => 'thanks_postbit_inline_classic',
-		'template' => "<tr id=\"thx{\$post[\'pid\']}\" style=\"{\$display_style}\" class=\"trow2 tnx_style tnx_classic\"><td><span class=\"smalltext\">{\$lang->thx_givenby}</span></td><td class=\"trow2 tnx_style\" id=\"thx_list{\$post[\'pid\']}\">\$entries</td></tr>",
+		'template' => "<tr id=\"thx{\$post[\'pid\']}\" style=\"{\$display_style}\" class=\"{\$altbg}\"><td><span class=\"smalltext\">{\$lang->thx_givenby}</span></td><td id=\"thx_list{\$post[\'pid\']}\">\$entries</td></tr>",
 		'sid' => '-1',
 		);	
 	$db->insert_query("templates", $templatearray);
@@ -321,21 +321,14 @@ function thx_activate()
 		'template' => "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\" id=\"thx{\$post[\'pid\']}\" style=\"{\$display_style};margin-top:5px;\">
 	<tr>
 		<td>
-			<div class=\"smallfont\" align=\"center\">
-				<input type=\"button\" value=\"{\$lang->thx_show_thanks}\" class=\"thx_hideshow_btn\" onclick=\"if (this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display != \'\') { this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display = \'\'; this.value = \'{\$lang->thx_hide_thanks}\'; } else { this.parentNode.parentNode.getElementsByTagName(\'div\')[1].getElementsByTagName(\'div\')[0].style.display = \'none\'; this.value = \'{\$lang->thx_show_thanks}\'; }\" />
-			</div>
-			<div class=\"alt2\">				
-				<div id=\"dn_thx_list{\$post[\'pid\']}\" style=\"display:none;\">
-					<table border=\"0\" cellspacing=\"{\$theme[\'borderwidth\']}\" cellpadding=\"{\$theme[\'tablespace\']}\" class=\"tborder thxdsp_outline\">
-						<tr class=\"trow1 tnx_style\">
+					<table border=\"0\" cellspacing=\"{\$theme[\'borderwidth\']}\" cellpadding=\"{\$theme[\'tablespace\']}\" class=\"tborder\">
+						<tr class=\"{\$altbg}\">
 							<td valign=\"top\" width=\"1%\" nowrap=\"nowrap\">
 								<img src=\"{\$mybb->settings[\'bburl\']}/images/gracias.png\" align=\"absmiddle\" /> &nbsp;<span class=\"smalltext\">{\$lang->thx_givenby}</span>
 							</td>
-							<td class=\"trow2 tnx_style\" id=\"thx_list{\$post[\'pid\']}\" align=\"left\">\$entries</td>
+							<td class=\"{\$altbg}\" id=\"thx_list{\$post[\'pid\']}\" align=\"left\">\$entries</td>
 						</tr>
 					</table>
-				</div>
-			</div>
 		</td>
 	</tr>
 </table>",
@@ -731,9 +724,9 @@ function thx(&$post)
 	$count = 0;
 	$total = explode(',',$entries);
 	$count = count($total) - 1;
-	if ($count == 0){$count="<span class=\"neutral_thx\">".$count."</span>";}
-	else if ($count >= 1){$count="<span class=\"good_thx\">".$count."</span>";}
-	else {$count="<span class=\"bad_thx\"".$count."</span>";}
+	if ($count == 0){$count="<span class=\"neutral_thx\" id=\"counter{$post['pid']}\">".$count."</span>";}
+	else if ($count >= 1){$count="<span class=\"good_thx\" id=\"counter{$post['pid']}\">".$count."</span>";}
+	else {$count="<span class=\"bad_thx\" id=\"counter{$post['pid']}\">".$count."</span>";}
 	}
 	else{$count="";}
 	if($mybb->user['uid'] == $post['uid']){
@@ -758,19 +751,19 @@ function thx(&$post)
 	    $post['button_rep'] = "";
 		if(!$b)
 		{
-			$post['thanks'] = "<a id=\"a{$post['pid']}\" onclick=\"javascript:return thx({$post['pid']});\" href=\"showthread.php?action=thank&tid={$post['tid']}&pid={$post['pid']}\" class=\"gracias\">
-			 <span class=\"thx_buttons\" id=\"sp{$post['pid']}\">$count {$lang->thx_button_add}</span></a>";
+			$post['thanks'] = $count . "<a id=\"a{$post['pid']}\" onclick=\"javascript:return thx({$post['pid']});\" href=\"showthread.php?action=thank&tid={$post['tid']}&pid={$post['pid']}\" class=\"gracias\">
+			 <span class=\"thx_buttons\" id=\"sp{$post['pid']}\" style=\"color: green;\"> {$lang->thx_button_add}</span></a>";
 			$display_style = "display: none";
 		}
 		else if($mybb->settings['thx_del'] == "1")
 		{
-			$post['thanks'] = "<a id=\"a{$post['pid']}\" onclick=\"javascript:return rthx({$post['pid']});\" href=\"showthread.php?action=remove_thank&tid={$post['tid']}&pid={$post['pid']}\" class=\"egracias\">
-			<span class=\"thx_buttons\" id=\"sp{$post['pid']}\">$count {$lang->thx_button_del}</span></a>";	 
+			$post['thanks'] = $count . "<a id=\"a{$post['pid']}\" onclick=\"javascript:return rthx({$post['pid']});\" href=\"showthread.php?action=remove_thank&tid={$post['tid']}&pid={$post['pid']}\" class=\"egracias\">
+			<span class=\"thx_buttons\" id=\"sp{$post['pid']}\" style=\"color: red;\"> {$lang->thx_button_del}</span></a>";	 
 			$display_style = "display: inline-table";
 		}	
 		else
 		{
-			$post['thanks'] = "<a id=\"a{$post['pid']}\" class=\"gracias\" href=\"showthread.php?tid={$post['tid']}&pid={$post['pid']}\"><span class=\"thx_buttons\" id=\"sp{$post['pid']}\">$count</span></a>";
+			$post['thanks'] = "<a id=\"a{$post['pid']}\" class=\"gracias\" href=\"showthread.php?tid={$post['tid']}&pid={$post['pid']}\">$count</a>";
 		}
 			$playout = $mybb->settings['postlayout'];
 			
@@ -861,9 +854,9 @@ function do_action()
 	$count = 0;
 	$total = explode(',',$list);
 	$count = count($total) - 1;
-	if ($count == 0){$count="<span class=\"neutral_thx\">".$count."</span>";}
-	else if ($count >= 1){$count="<span class=\"good_thx\">".$count."</span>";}
-	else {$count="<span class=\"bad_thx\"".$count."</span>";}
+	if ($count == 0){$count="<span style=\"color: gray;\">".$count."</span>";}
+	else if ($count >= 1){$count="<span style=\"color: green;\">".$count."</span>";}
+	else {$count="<span style=\"color: red;\">".$count."</span>";}
 	}
 	else{
 	$count = "";
@@ -890,14 +883,15 @@ function do_action()
 	$output = "<thankyou>
 				<list><![CDATA[{$list}]]></list>
 				<display>".($list ? "1" : "0")."</display>
-				<button><![CDATA[{$count} ";	
+				<count><![CDATA[{$count}]]></count>
+				<button><![CDATA[";	
 	if($mybb->input['action'] == "thankyou")
 	{
 		$output .= "";
 	}
 	else if($mybb->settings['thx_del'] == "1")
 	{
-		$output .= "<span class=\"gracias\">{$lang->thx_button_add}</span>";
+		$output .= "<span style=\"color: green;\">{$lang->thx_button_add}</span>";
 	}	
 	$output .= "]]></button>
 			    <post><![CDATA[$post]]></post>	
@@ -909,14 +903,15 @@ function do_action()
 	$output = "<thankyou>
 				<list><![CDATA[{$list}]]></list>
 				<display>".($list ? "1" : "0")."</display>
-				<button><![CDATA[{$count} ";	
+				<count><![CDATA[{$count}]]></count>				
+				<button><![CDATA[";	
 	if($mybb->input['action'] == "thankyou")
 	{
-		$output .= "<span class=\"egracias\">{$lang->thx_button_del}</span>";
+		$output .= "<span style=\"color: red;\">{$lang->thx_button_del}</span>";
 	}
 	else if($mybb->settings['thx_del'] == "1")
 	{
-		$output .= "<span class=\"gracias\">{$lang->thx_button_add}</span>";
+		$output .= "<span style=\"color: green;\">{$lang->thx_button_add}</span>";
 	}	
 	$output .= "]]></button>
 			    <post><![CDATA[$post]]></post>	
@@ -997,15 +992,7 @@ function build_thank(&$pid, &$is_thx)
 		{
 			$url = get_profile_link($record['adduid']);
 			$name = format_name($record['username'], $record['usergroup'], $record['displaygroup']) . ", ";
-            $avatar = $record['avatar'];
-            if($avatar != '')
-            {
-			$thx_cache['showname'][$record['username']] = "<a href=\"$url\" dir=\"$dir\"><img src=\"$avatar\" style=\"width: 19px; height: 19px; border-style: double; color: #D8DFEA; padding: 2px; background-color: #FCFDFD; border-radius: 4px;\"> $name</a>";
-            }
-            else
-            {
-            $thx_cache['showname'][$record['username']] = "<a href=\"$url\" dir=\"$dir\"><img src=\"images/default_avatar.gif\" style=\"width: 19px; height: 19px; border-style: double; color: #D8DFEA; padding: 2px; background-color: #FCFDFD; border-radius: 4px;\">$name</a>";
-            }
+			$thx_cache['showname'][$record['username']] = "<a href=\"$url\" dir=\"$dir\"> $name</a>";
 		}
 
 		if($mybb->settings['thx_hidemode'])
