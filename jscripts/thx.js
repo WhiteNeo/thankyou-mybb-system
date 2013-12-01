@@ -1,13 +1,12 @@
 /**
  * Thank You MyBB System + MyAlerts + rep xD v 2.2.
  * Upgrade for MyBB 1.6.x (actually 1.6.11)
- * www.soportemybb.com
+ * darkneo.skn1..com
  * Author: Dark Neo
  * bassed on Saeedgh thanks 3.9.1 plugin
  */
 
 var pid=-1;
-var spinner=null;
 function thx_common(response)
 {
 	try
@@ -20,7 +19,9 @@ function thx_common(response)
 			table.style.display = xml.getElementsByTagName('display').item(0).firstChild.data != 0 ?
 				 '' : 'none';
 			list = document.getElementById('thx_list' + pid);
-			list.innerHTML = xml.getElementsByTagName('list').item(0).firstChild.data;
+			list.innerHTML = xml.getElementsByTagName('list').item(0).firstChild.data;	
+			counter = document.getElementById('counter' + pid);
+			counter.innerHTML = xml.getElementsByTagName('count').item(0).firstChild.data;						
 			button = document.getElementById('sp' + pid);
 			button.innerHTML = xml.getElementsByTagName('button').item(0).firstChild.data;			
             post = document.getElementById('pid_' + pid);
@@ -36,6 +37,8 @@ function thx_common(response)
 				'' : 'none';		
 			list = document.getElementById('thx_list' + pid);
 			list.innerHTML = xml.getElementsByTagName('list').item(0).firstChild.data;	
+			counter = document.getElementById('counter' + pid);
+			counter.innerHTML = xml.getElementsByTagName('count').item(0).firstChild.data;						
 			button = document.getElementById('sp' + pid);
 			button.innerHTML = xml.getElementsByTagName('button').item(0).firstChild.data;	
             post = document.getElementById('pid_' + pid);
@@ -56,8 +59,8 @@ function thx_common(response)
 	}
 	finally
 	{
-		spinner.destroy();
-		spinner=null;
+		this.spinner.destroy();
+		this.spinner=null;
 		return lin;
 	}
 	
@@ -86,20 +89,20 @@ function rthx_action(response)
 
 function thx(id)
 {
-	if(spinner)
+	if(this.spinner)
 		return false;
-	spinner = new ActivityIndicator("body", {image: "images/spinner_big.gif"});
+	this.spinner = new ActivityIndicator("body", {image: imagepath + "/spinner_big.gif"});
 	pid=id;
-	pb="pid="+pid;
-	new Ajax.Request('xmlhttp.php?action=thankyou&my_post_key='+my_post_key,{method: 'post',postBody:pb, onComplete:thx_action});
+	b="pid="+pid;
+	new Ajax.Request('xmlhttp.php?action=thankyou&my_post_key='+my_post_key,{method: 'post',postBody:b, onComplete:thx_action});
 	return false;
 }
 
 function rthx(id)
 {
-	if(spinner)
+	if(this.spinner)
 		return false;
-	spinner = new ActivityIndicator("body", {image: "images/spinner_big.gif"});
+	this.spinner = new ActivityIndicator("body", {image: imagepath + "/spinner_big.gif"});
 	pid=id;
 	b="pid="+pid;
 	new Ajax.Request('xmlhttp.php?action=remove_thankyou&my_post_key='+my_post_key,{method: 'post',postBody:b,onComplete:rthx_action});
