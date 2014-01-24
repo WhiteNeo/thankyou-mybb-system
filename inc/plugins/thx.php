@@ -48,14 +48,14 @@ function thx_info()
 	}
 
 	return array(
-		'name'			=>	$db->escape_string($lang->thx_title),
+		'name'		=>	$db->escape_string($lang->thx_title),
 		'description'	=>	$db->escape_string($lang->thx_desc) . $thx_config_link,
-		'website'		=>	'http://www.darkneo.skn1.com',
-		'author'		=>	'Dark Neo',
+		'website'	=>	'https://github.com/WhiteNeo/thankyou-mybb-system',
+		'author'	=>	'Dark Neo',
 		'authorsite'	=>	'http://darkneo.skn1.com',
-		'version'		=>	'2.2',
-		'guid'		    =>	'',
-        'compatibility' =>	'16*'
+		'version'	=>	'2.3',
+		'guid'		=>	'687d4b0701008936e97c6bf3970bb014',
+        	'compatibility' =>	'16*'
 	);
 }
 
@@ -800,7 +800,7 @@ function thx(&$post)
 
 function do_action()
 {
-	global $mybb, $lang, $theme, $templates, $thread, $post, $attachcache, $parser, $pid,$tid;
+	global $mybb, $lang, $theme, $templates, $thread, $post, $forum, $attachcache, $parser, $pid,$tid;
 	
 	if(($mybb->input['action'] != "thankyou"  &&  $mybb->input['action'] != "remove_thankyou") || $mybb->request_method != "post")
 	{
@@ -832,9 +832,10 @@ function do_action()
 	$tid = $forum['tid'];
 	$pid = $forum['pid'];
 	
-	$pid = intval($mybb->input['pid']);
+	$id = intval($mybb->input['pid']);
 	$tid = intval($mybb->input['tid']);
-
+	$oldforum = $forum;
+	
     if(!verify_post_check($mybb->input['my_post_key'])){
 		xmlhttp_error("Usted no puede agradecer en los mensajes");
 	}
@@ -867,6 +868,21 @@ function do_action()
 		require_once MYBB_ROOT."inc/class_parser.php";
 		$parser = new postParser;
 	}
+
+	$unapproved_shade = '';
+	if($post['visible'] == 0 && $post_type == 0)
+	{
+		$altbg = $unapproved_shade = 'trow_shaded';
+	}
+	elseif($altbg == 'trow1')
+	{
+		$altbg = 'trow2';
+	}
+	else
+	{
+		$altbg = 'trow1';
+	}
+
 	$parser_options = array(
 			"allow_html" => $forum['allowhtml'],
 			"allow_mycode" => $forum['allowmycode'],
@@ -1051,15 +1067,15 @@ function do_thank(&$pid)
 		$sq = array (
 			"UPDATE ".TABLE_PREFIX."users SET thx=thx+1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
 			"UPDATE ".TABLE_PREFIX."users SET thxcount=thxcount+1, reputation = reputation+1,thxpost=CASE( SELECT COUNT(*) FROM ".TABLE_PREFIX."thx WHERE pid='{$pid}' LIMIT 1) WHEN 0 THEN thxpost+1 ELSE thxpost END WHERE uid='{$database['uid']}' LIMIT 1",					
-	        "UPDATE ".TABLE_PREFIX."posts SET pthx=pthx+1 WHERE pid='{$pid}' LIMIT 1",
-            "INSERT INTO ".TABLE_PREFIX."reputation (uid, adduid, pid, reputation, dateline, comments) VALUES ('{$tmp['uid']}', '{$mybb->user['uid']}', '{$pid}', 1, '{$time}', '{$lang->thx_thankyou}')"			
+	        	"UPDATE ".TABLE_PREFIX."posts SET pthx=pthx+1 WHERE pid='{$pid}' LIMIT 1",
+        		"INSERT INTO ".TABLE_PREFIX."reputation (uid, adduid, pid, reputation, dateline, comments) VALUES ('{$tmp['uid']}', '{$mybb->user['uid']}', '{$pid}', 1, '{$time}', '{$lang->thx_thankyou}')"			
 			);
 		}else if($mybb->settings['thx_reputation'] == 3){
 		$sq = array (
 			"UPDATE ".TABLE_PREFIX."users SET thx=thx+1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
 			"UPDATE ".TABLE_PREFIX."users SET thxcount=thxcount+1, reputation = reputation+1,thxpost=CASE( SELECT COUNT(*) FROM ".TABLE_PREFIX."thx WHERE pid='{$pid}' LIMIT 1) WHEN 0 THEN thxpost+1 ELSE thxpost END WHERE uid='{$database['uid']}' LIMIT 1",					
-	        "UPDATE ".TABLE_PREFIX."posts SET pthx=pthx+1 WHERE pid='{$pid}' LIMIT 1",
-            "INSERT INTO ".TABLE_PREFIX."reputation (uid, adduid, pid, reputation, dateline, comments) VALUES ('{$tmp['uid']}', '{$mybb->user['uid']}', '{$pid}', 1, '{$time}', '{$lang->thx_thankyou}')",			
+	        	"UPDATE ".TABLE_PREFIX."posts SET pthx=pthx+1 WHERE pid='{$pid}' LIMIT 1",
+            		"INSERT INTO ".TABLE_PREFIX."reputation (uid, adduid, pid, reputation, dateline, comments) VALUES ('{$tmp['uid']}', '{$mybb->user['uid']}', '{$pid}', 1, '{$time}', '{$lang->thx_thankyou}')",			
 			"INSERT INTO ".TABLE_PREFIX."alerts (uid, from_id, unread, alert_type, dateline) VALUES ('{$tmp['uid']}', '{$mybb->user['uid']}', 1, 'rep', '{$time}')"			
 			);
 		}else{
