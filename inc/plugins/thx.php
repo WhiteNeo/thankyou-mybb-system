@@ -1,6 +1,6 @@
 <?php
 /**
-  * Thank you 2.2
+  * Thank you 2.2.1
   * Upgrade for MyBB 1.6.x (actually 1.6.11)
   * darkneo.skn1.com
   * Autor: Dark Neo
@@ -53,7 +53,7 @@ function thx_info()
 		'website'	=>	'https://github.com/WhiteNeo/thankyou-mybb-system',
 		'author'	=>	'Dark Neo',
 		'authorsite'	=>	'http://darkneo.skn1.com',
-		'version'	=>	'2.3',
+		'version'	=>	'2.2.1',
 		'guid'		=>	'687d4b0701008936e97c6bf3970bb014',
         	'compatibility' =>	'16*'
 	);
@@ -830,10 +830,10 @@ function do_action()
 	$forum = get_forum($thread['fid']);
 	$fid = $forum['fid'];
 	$tid = $forum['tid'];
-	$pid = $forum['pid'];
+	$id = $forum['pid'];
 	
-	$id = intval($mybb->input['pid']);
-	$tid = intval($mybb->input['tid']);
+	$pid = intval($mybb->input['pid']);
+	$tid = intval($mybb->
 	$oldforum = $forum;
 	
     if(!verify_post_check($mybb->input['my_post_key'])){
