@@ -1,8 +1,8 @@
 <?php
 /**
-  * Thank you 2.2.1
-  * Upgrade for MyBB 1.6.x (actually 1.6.11)
-  * darkneo.skn1.com
+  * Thank you 2.2.2
+  * Upgrade for MyBB 1.6.x (actually 1.6.12)
+  * Website: http://darkneo.skn1.com
   * Autor: Dark Neo
   * baseed on SaeedGh 3.9.1 thanks plugin.
 */
@@ -55,7 +55,7 @@ function thx_info()
 		'authorsite'	=>	'http://darkneo.skn1.com',
 		'version'	=>	'2.2.1',
 		'guid'		=>	'687d4b0701008936e97c6bf3970bb014',
-        	'compatibility' =>	'16*'
+        'compatibility' =>	'16*'
 	);
 }
 
@@ -833,11 +833,11 @@ function do_action()
 	$id = $forum['pid'];
 	
 	$pid = intval($mybb->input['pid']);
-	$tid = intval($mybb->
+	$tid = intval($mybb->input['tid']);
 	$oldforum = $forum;
 	
     if(!verify_post_check($mybb->input['my_post_key'])){
-		xmlhttp_error("Usted no puede agradecer en los mensajes");
+		xmlhttp_error("You can not use thanks system");
 	}
 	
 	if ($mybb->input['action'] == "thankyou")
