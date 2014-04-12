@@ -2,13 +2,14 @@
 /**
  * Author: Dark Neo
  * Plugin: Thanks System
- * Version: 2.2
+ * Version: 2.3.2
  * Plugin Language File: english
  */
 
 $l['thx_title'] = "Thanks system";
 $l['thx_desc'] = "Add a new button on forums where apply to thanks users";
 $l['thx_config'] = "Configure Plugin";
+$l['thx_disabled'] = "Plugin Disabled";
 $l['thx_opt_title'] = "[Plugin] Thanks system";
 $l['thx_opt_desc'] = "Configuration options";
 $l['thx_opt_enable'] = "Enable/Disable plugin";
@@ -21,15 +22,13 @@ $l['thx_del_title'] = "Users can delete given thanks";
 $l['thx_del_desc'] = "Users can delete every one message they give to another user";
 $l['thx_date_title'] = "Show date on hover";
 $l['thx_date_desc'] = "Show thanked date, on mouse over";
-$l['thx_temp_title'] = "Templates auto detection";
-$l['thx_temp_desc'] = "Automatically put HTML code! (only if \"table separation\" are enable)";
-$l['thx_table_title'] = "Table Separation";
-$l['thx_table_desc'] = "If you want to show thanks between messages  <b>(not an the end)</b>, enable this option.";
 $l['thx_hide_title'] = "Enable [???] tag";
 $l['thx_hide_desc'] = "Hide contents between <b>[???]</b> tag, until you thank post. <div style=\"float:right;\"><b>Use next option to set hide tag</b></div>";
 $l['thx_hidetag_title'] = "Hide tag to use on your messages Ex: [???]";
 $l['thx_hidetag_desc'] = "Set tag for hide contents on posts <b>[???]</b>, like (MyCode).<div style=\"float:right;\"><b>You have to enable previous option to use this.<br />Ex: hide, lock, guest, etc...</b></div>";
 $l['thx_hidetag_value'] = "hide";
+$l['thx_ebutton_title'] = "Editor Button";
+$l['thx_ebutton_desc'] = "Show hide MyCode button (You have to enable hide tag.)";
 $l['thx_fid_title'] = "Forums where apply this mod";
 $l['thx_fid_desc'] = "Set forums by id where you want to use this system, separated by comma. <div style=\"float:right;\"><b>Ex: 2,3,4. By default principal forum (ID 2)</b></div>";
 $l['thx_gid_title'] = "Usergrous who can view hide tag contents [???]";
@@ -59,4 +58,7 @@ $l['thx_confirm_elements'] = "Elements to Proccess";
 $l['thx_update_psuccess'] = "Thanks Reconstruction Succed";
 $l['thx_update_tsuccess'] = "Thanks Recount Proccess Succed";
 $l['thx_thankyou'] = "Thanks for this post";
+$l['thx_alerts_title'] = "Add an alert when someone has thanked a post?";
+$l['thx_alerts_title_desc'] = "If you enable this, everytime you have a new notificaction when someone has thanked your posts (Require Thanks System plugin)";
+$l['thx_alerts_install_error'] = "You need to install MyAlerts to add an alert message, if you install MyAlerts, deactivate and activate this plugin again, this won't delete thanks given or received and give you a new option to use Thankyou System with MyAlerts";
 ?>

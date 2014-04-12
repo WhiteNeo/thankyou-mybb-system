@@ -1,48 +1,29 @@
 /**
- * Thank You MyBB System + MyAlerts + rep xD v 2.2.
- * Upgrade for MyBB 1.6.x (actually 1.6.11)
- * darkneo.skn1..com
+ * Thank You MyBB System + MyAlerts + rep xD v 2.3.2
+ * Upgrade for MyBB 1.6.x (actually 1.6.12)
+ * darkneo.skn1.com
  * Author: Dark Neo
- * bassed on Saeedgh thanks 3.9.1 plugin
  */
 
 var pid=-1;
+var spinner=null;
 function thx_common(response)
 {
 	try
 	{
 		xml=response.responseXML;
-		remove=xml.getElementsByTagName('del').item(0).firstChild.data=="1";	
 		lin=document.getElementById('a'+pid);
-		if (remove) {				 
-			table = document.getElementById('thx' + pid);
-			table.style.display = xml.getElementsByTagName('display').item(0).firstChild.data != 0 ?
-				 '' : 'none';
+		if (lin) {				 
 			list = document.getElementById('thx_list' + pid);
-			list.innerHTML = xml.getElementsByTagName('list').item(0).firstChild.data;	
-			counter = document.getElementById('counter' + pid);
-			counter.innerHTML = xml.getElementsByTagName('count').item(0).firstChild.data;						
-			button = document.getElementById('sp' + pid);
-			button.innerHTML = xml.getElementsByTagName('button').item(0).firstChild.data;			
-            post = document.getElementById('pid_' + pid);
-			post.innerHTML = xml.getElementsByTagName('post').item(0).firstChild.data;
-		}
-		else if(!remove)
-		{		
-			lin.onclick=null;
-			lin.href="";
-			lin = null;	
-		    table = document.getElementById('thx' + pid);		
-			table.style.display = xml.getElementsByTagName('display').item(0).firstChild.data != 0 ?
-				'' : 'none';		
-			list = document.getElementById('thx_list' + pid);
-			list.innerHTML = xml.getElementsByTagName('list').item(0).firstChild.data;	
-			counter = document.getElementById('counter' + pid);
-			counter.innerHTML = xml.getElementsByTagName('count').item(0).firstChild.data;						
-			button = document.getElementById('sp' + pid);
+			list.innerHTML = xml.getElementsByTagName('list').item(0).firstChild.data;
+			thxcount = document.getElementById('thx_thanked_' + pid);
+			thxcount.innerHTML = xml.getElementsByTagName('thxcount').item(0).firstChild.data;															
+			button = document.getElementById('sp_' + pid);
 			button.innerHTML = xml.getElementsByTagName('button').item(0).firstChild.data;	
-            post = document.getElementById('pid_' + pid);
-			post.innerHTML = xml.getElementsByTagName('post').item(0).firstChild.data;				
+			counter = document.getElementById('counter' + pid);
+			counter.innerHTML = xml.getElementsByTagName('count').item(0).firstChild.data;
+            post = document.getElementById('thxpid_' + pid);
+			post.innerHTML = xml.getElementsByTagName('post').item(0).firstChild.data;
 		}
 		else
 		{
@@ -59,8 +40,8 @@ function thx_common(response)
 	}
 	finally
 	{
-		this.spinner.destroy();
-		this.spinner=null;
+		spinner.destroy();
+		spinner=null;
 		return lin;
 	}
 	
@@ -89,20 +70,20 @@ function rthx_action(response)
 
 function thx(id)
 {
-	if(this.spinner)
+	if(spinner)
 		return false;
-	this.spinner = new ActivityIndicator("body", {image: imagepath + "/spinner_big.gif"});
+	spinner = new ActivityIndicator("body", {image: imagepath + "/spinner_big.gif"});
 	pid=id;
-	b="pid="+pid;
-	new Ajax.Request('xmlhttp.php?action=thankyou&my_post_key='+my_post_key,{method: 'post',postBody:b, onComplete:thx_action});
+	pb="pid="+pid;
+	new Ajax.Request('xmlhttp.php?action=thankyou&my_post_key='+my_post_key,{method: 'post',postBody:pb, onComplete:thx_action});
 	return false;
 }
 
 function rthx(id)
 {
-	if(this.spinner)
+	if(spinner)
 		return false;
-	this.spinner = new ActivityIndicator("body", {image: imagepath + "/spinner_big.gif"});
+	spinner = new ActivityIndicator("body", {image: imagepath + "/spinner_big.gif"});
 	pid=id;
 	b="pid="+pid;
 	new Ajax.Request('xmlhttp.php?action=remove_thankyou&my_post_key='+my_post_key,{method: 'post',postBody:b,onComplete:rthx_action});

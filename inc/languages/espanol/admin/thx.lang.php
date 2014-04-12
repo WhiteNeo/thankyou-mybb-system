@@ -2,13 +2,14 @@
 /**
  * Autor: Dark Neo
  * Plugin: Sistema de Agradecimientos
- * Versión: 2.2
+ * Versión: 2.3.2
  * Archivo de Idioma del Plugin: espanol
  */
 
 $l['thx_title'] = "Sistema de agradecimientos";
 $l['thx_desc'] = "Agrega un botón para dar gracias en los foros que aplica, a los temas de usuarios";
 $l['thx_config'] = "Configurar Plugin";
+$l['thx_disabled'] = "Plugin Desactivado";
 $l['thx_opt_title'] = "[Plugin] Sistema de Agradecimientos";
 $l['thx_opt_desc'] = "Configuración del plugin";
 $l['thx_opt_enable'] = "Activar/Desactivar plugin";
@@ -30,6 +31,8 @@ $l['thx_hide_desc'] = "Oculta los contenidos entre la etiqueta <b>[???]</b>, has
 $l['thx_hidetag_title'] = "Etiqueta a utilizar para ocultar contenidos en sus mensajes Ej: [???]";
 $l['thx_hidetag_desc'] = "Elija el texto para la etiqueta dentro de <b>[???]</b>, para utilizar (MyCode).<div style=\"float:right;\"><b>Debe habilitar la opción de arriba para utililzar esta función.<br />Ej de etiquetas a utilizar: oculto, hide, etc...</b></div>";
 $l['thx_hidetag_value'] = "oculto";
+$l['thx_ebutton_title'] = "Botón en el Editor";
+$l['thx_ebutton_desc'] = "Mostrar el botón en el editor para el MyCode (Necesitas habilitar la etiqueta oculto.)";
 $l['thx_fid_title'] = "Foros en los que aplica el sistema de agradecimientos";
 $l['thx_fid_desc'] = "Coloque la id de los foros en los que se implementara el sistema de agradecimientos, separados por coma. <div style=\"float:right;\"><b>Ej: 2,3,4. Por defecto foro principal (ID 2)</b></div>";
 $l['thx_gid_title'] = "Grupos que pueden mirar los contenidos de la etiqueta [???]";
@@ -59,4 +62,7 @@ $l['thx_confirm_elements'] = "Elementos Restantes";
 $l['thx_update_psuccess'] = "Se han reconstruido los agradecimientos con éxito";
 $l['thx_update_tsuccess'] = "Se ha actualizado el conteo de agradecimientos con éxito";
 $l['thx_thankyou'] = "Gracias por el aporte";
+$l['thx_alerts_title'] = "Agregar el sistema de alertas al agradecer?";
+$l['thx_alerts_title_desc'] = "Agrega una alerta al usuario cuando alguien agradezca en sus mensajes (Necesitas el Sistema de Agradecimientos)";
+$l['thx_alerts_install_error'] = "Debes tener instalador el plugin MyAlerts para agregar alertas en los mensajes, si lo instalas, puedes desactivar y activar este pllugin de nuevo, esto no elimina tus agradecimientos y te permite agregar alertas al agradecer utilizando MyAlerts";
 ?>
