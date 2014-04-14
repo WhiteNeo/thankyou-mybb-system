@@ -8,7 +8,7 @@
 
 if(!defined("IN_MYBB"))
 {
-	die("No se permite la inicialización directa de este archivo.");
+	die("No se permite la inicializaciÃ³n directa de este archivo.");
 }
 
 $plugins->add_hook("postbit", "thx");
@@ -245,15 +245,14 @@ function thx_activate()
 }
 
 .thx_list{
-		opacity: 0.8;
 		color: #069;
 		font-size: 10px;
 		font-weight: bold;
-		border: 1px solid #FFFFFF;
+		border: 1px solid #424242;
 		border-radius: 4px;
 		padding: 15px;
 		margin: 10px -10px;
-		background: #F0F0F0;
+		background: #CCC;
 		width: 100%;
 }
 
@@ -265,17 +264,6 @@ function thx_activate()
 		padding: 2px;
 		background-color: #FCFDFD;
 		border-radius: 4px;
-}
-
-.postbitx{
-	color: #424242;
-	background: #DFF2BF;
-	padding: 2px 6px;
-	border-radius: 5px;
-}
-
-.postbitx a{
-	color: #4b9134;
 }'),
 			'lastmodified' => TIME_NOW,
 			'sid' => -2
@@ -793,7 +781,7 @@ function thx(&$post)
 	else if ($count >= 1){$count="<a href=\"thx.php?thanked_pid={$post['pid']}&my_post_key={$mybb->post_code}\" id=\"thx_menu_{$post['pid']}\"><span id=\"counter{$post['pid']}\"><span class=\"good_thx\"> ".$count." </span></span></a>";}
 	else {$count="<a href=\"thx.php?thanked_pid={$post['pid']}&my_post_key={$mybb->post_code}\" id=\"thx_menu_{$post['pid']}\"><span id=\"counter{$post['pid']}\"><span class=\"bad_thx\"> ".$count." </span></span></a>";}
 	}
-	else{$count="";}
+	else{$count="<span id=\"counter{$post['pid']}\"></span>";}
 	$post['thx_counter'] = $count;
 	if($mybb->user['uid'] == $post['uid']){
 	$post['thanks'] = "";
@@ -825,11 +813,11 @@ function thx(&$post)
 		$protect = "&my_post_key={$mybb->post_code}";	
 		$post['thanks_count'] = $lang->sprintf($lang->thx_thank_count, $post['thx'], $post['uid'].$protect, $post['pid']);
 		$post['thanked_count'] = $lang->sprintf($lang->thx_thanked_count, $post['thxcount'], $post['uid'].$protect, $post['pid']);
-		$post['user_details'] .= "<div class=\"postbitx\">" . $post['thanks_count'] . "<br />" . $post['thanked_count'] . "</div>";
+		$post['user_details'] .= $post['thanks_count'] . "<br />" . $post['thanked_count'];
 	}
 	else if ($mybb->settings['thx_count'] == "0"){
-		$post['thanks_count'] = "";
-		$post['thanked_count'] = "";
+		$post['thanks_count'] = "<span id=\"thx_thanked_{$post['pid']}></span>";
+		$post['thanked_count'] = "<span id=\"thx_thanks_{$post['pid']}></span>";
 	}
 }
 
@@ -898,7 +886,7 @@ function thx_parse(&$alert)
 
 function do_action()
 {
-	global $mybb, $db, $lang, $theme, $templates, $forum, $thread, $post, $attachcache, $parser, $pid,$tid;
+	global $mybb, $db, $lang, $theme, $templates, $count, $forum, $thread, $post, $attachcache, $parser, $pid,$tid;
 	
 	if(($mybb->input['action'] != "thankyou"  &&  $mybb->input['action'] != "remove_thankyou") || $mybb->request_method != "post")
 	{
@@ -970,12 +958,9 @@ function do_action()
 	if ($count == 0){$count="<span class=\"neutral_thx\">".$count."</span>";}
 	else if ($count >= 1 && $count < 9){$count="<span class=\"good_thx\">".$count."</span>";}
 	else if ($count >= 10){$count="<span class=\"good_thx\">+ ".$count."</span>";}
-	
-	else {$count="<span class=\"bad_thx\">".$count."</span>";}
+	else if ($count > 0){$count="<span class=\"bad_thx\">".$count."</span>";}
 	}
-	else{
-	$count = "";
-	}
+	else{$count = "<span id=\"counter{$post['pid']}\"></span>";}
 	require_once MYBB_ROOT."inc/functions_post.php";
 	if(!$parser)
 	{
@@ -1099,7 +1084,6 @@ function do_action()
 			 </thankyou>";
 	echo $output;
 	}
-	// DNT DNT
 }
 
 function thx_editor(&$edit_lang){
@@ -1342,7 +1326,7 @@ function del_thank(&$pid)
 	}
 }
 
-function deletepost_edit(&$pid)
+function deletepost_edit($pid)
 {
 	global $db;
 	
