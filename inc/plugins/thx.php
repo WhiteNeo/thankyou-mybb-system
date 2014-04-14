@@ -698,12 +698,12 @@ function thx_code(&$message)
 
      if($mybb->user['uid'] != $post['uid'])
      {
-     $thx_user = $mybb->user['uid'];
+     $thx_user = intval($mybb->user['uid']);
 	 $query=$db->query("SELECT th.txid, th.uid, th.adduid, th.pid, th.time, u.username, u.usergroup, u.displaygroup, u.avatar
 		FROM ".TABLE_PREFIX."thx th
 		JOIN ".TABLE_PREFIX."users u
 		ON th.adduid=u.uid
-		WHERE th.pid='$post[pid]' AND th.adduid ='$thx_user'
+		WHERE th.pid='{$post[pid]}' AND th.adduid ='{$thx_user}'
 		ORDER BY th.time ASC"
 	);
 
@@ -1154,7 +1154,8 @@ function build_thank(&$pid, &$is_thx)
 	global $db, $mybb, $lang, $thx_cache, $message;
 	$is_thx = 0;
 	
-	$pid = intval($pid);
+	$pid = intval($pid); 
+	if ($pid == 0 || $pid == ''){$pid == intval($mybb->input['pid']);}
 	
 	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
 	{
@@ -1167,7 +1168,7 @@ function build_thank(&$pid, &$is_thx)
 		FROM ".TABLE_PREFIX."thx th
 		JOIN ".TABLE_PREFIX."users u
 		ON th.adduid=u.uid
-		WHERE th.pid='$pid'
+		WHERE th.pid='{$pid}'
 		ORDER BY th.time DESC
 		LIMIT 0, 10"
 	);
