@@ -924,6 +924,9 @@ function do_action()
 	if ($mybb->input['action'] == "thankyou")
 	{
 		do_thank($pid);
+		if($mybb->settings['thx_counter'] == "1"){
+		$count = intval($post['pthx'] + 1);
+		}
 		if($mybb->settings['thx_reputation'] == 3){
 			thx_addAward();
 		}
@@ -931,6 +934,9 @@ function do_action()
 	else if($mybb->settings['thx_del'] == "1")
 	{
 		del_thank($pid);
+		if($mybb->settings['thx_counter'] == "1"){
+		$count = intval($post['pthx'] - 1);
+		}
 	}	
 
 		$post = get_post($mybb->input['pid']);
@@ -952,15 +958,13 @@ function do_action()
 	$nonead = 0;
 	$list = build_thank($pid, $nonead);
 	if($mybb->settings['thx_counter'] == "1"){
-	$count = 0;
-	$total = explode(',',$list);
-	$count = count($total) - 1;	
 	if ($count == 0){$count="<span class=\"neutral_thx\">".$count."</span>";}
-	else if ($count >= 1 && $count < 9){$count="<span class=\"good_thx\">".$count."</span>";}
-	else if ($count >= 10){$count="<span class=\"good_thx\">+ ".$count."</span>";}
+	else if ($count >= 1){$count="<span class=\"good_thx\">".$count."</span>";}
 	else if ($count > 0){$count="<span class=\"bad_thx\">".$count."</span>";}
 	}
-	else{$count = "<span id=\"counter{$post['pid']}\"></span>";}
+	else{$count="<span id=\"counter{$post['pid']}\"></span>";;}
+	$post['thx_counter'] = $count;
+	
 	require_once MYBB_ROOT."inc/functions_post.php";
 	if(!$parser)
 	{
@@ -1178,7 +1182,7 @@ function build_thank(&$pid, &$is_thx)
 		if(!isset($thx_cache['showname'][$record['username']]))
 		{
 			$url = get_profile_link($record['adduid']);
-			$name = format_name($record['username'], $record['usergroup'], $record['displaygroup']) . ", ";
+			$name = format_name($record['username'], $record['usergroup'], $record['displaygroup']);
             $avatar = htmlspecialchars_uni($record['avatar']);
             if($avatar != '')
             {
