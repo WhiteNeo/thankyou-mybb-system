@@ -1,9 +1,9 @@
 <?php
 /**
-  * Version: 			Thank you 2.3.3
+  * Version: 		Thank you 2.3.3
   * Compatibillity: 	MyBB 1.6.x
-  * Website: 			darkneo.skn1.com
-  * Autor: 				Dark Neo
+  * Website: 		darkneo.skn1.com
+  * Autor: 		Dark Neo
 */
 
 if(!defined("IN_MYBB"))
