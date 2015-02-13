@@ -1,9 +1,9 @@
 <?php
 /**
-  * Version: 		Thank you 2.3.3
+  * Version: 		    Thank you 2.4.3
   * Compatibillity: 	MyBB 1.6.x
-  * Website: 		darkneo.skn1.com
-  * Autor: 		Dark Neo
+  * Website: 		    http://www.mybb.com
+  * Autor: 		        Dark Neo
 */
 
 if(!defined("IN_MYBB"))
@@ -11,41 +11,47 @@ if(!defined("IN_MYBB"))
 	die("No se permite la inicialización directa de este archivo.");
 }
 
+// Enganche que carga los datos del plugin en la caja del mensaje
 $plugins->add_hook("postbit", "thx");
+// Enganches del mensaje a mostrar, caja del mensaje, anuncios, vista previa y mensaje en todos los demás lados
 $plugins->add_hook("postbit_announcement", "thx_code");
 $plugins->add_hook("postbit_prev", "thx_code");
 $plugins->add_hook("parse_message", "thx_code");
+// Enganche utilizado para mostrar los agradecimientos en el perfil de usuario
+$plugins->add_hook('member_profile_end', 'thx_memprofile');
+// Enganche para la cita en los mensajes
 $plugins->add_hook("parse_quoted_message", "thx_quote");
+// Enganche para la parte AJAX del sistema
 $plugins->add_hook("xmlhttp", "do_action");
+// Enganche para el inicio del tema, parte no AJAX del sistema
 $plugins->add_hook("showthread_start", "direct_action");
+// Enganche al eliminar mensajes para eliminar los datos correspondientes
 $plugins->add_hook("class_moderation_delete_post", "deletepost_edit");
+// Enganches para la parte de la administración, opciones de reconteo, permisos de los reconteos y demás.
 $plugins->add_hook('admin_tools_action_handler', 'thx_admin_action');
 $plugins->add_hook('admin_tools_menu', 'thx_admin_menu');
 $plugins->add_hook('admin_tools_permissions', 'thx_admin_permissions');
 $plugins->add_hook('admin_load', 'thx_admin');
+// Enganche para cargar las plantillas a utilizar por el plugin
 $plugins->add_hook("global_start", "thx_global_start");
+// Enganche para agregar la parte de las alertas del sistema MyAlerts
 $plugins->add_hook('myalerts_load_lang', 'thx_load_lang');
 $plugins->add_hook('myalerts_alerts_output_start', 'thx_parse');
+//Enganche para agregar el botón al editor de texto.
 $plugins->add_hook('mycode_add_codebuttons', 'thx_editor');
+//Enganche para editar los grupos de usuarios y los usuarios con máximos agradecimientos por día
+$plugins->add_hook("admin_user_groups_edit_graph", "thx_edit_group");
+//Enganche para guardar los datos enviados por el formulario de máximos agradecimientos por día
+$plugins->add_hook("admin_user_groups_edit_commit", "thx_edit_group_do");
+/*Enganche para ocultar las etiquetas al editar el mensaje esto aún esta en desarrollo xD.
+$plugins->add_hook("editpost_end", "thx_edit");
+$plugins->add_hook("xmlhttp", "thx_qedit");*/
 
 function thx_info()
 {
-	global $mybb, $cache, $db, $lang;
+	global $mybb, $db, $lang;
 
-	$thx_config_link = '';
-	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
-	{
-		$lang->load("thx");
-	}
-	
-	if ($mybb->settings['thx_active'] == 1)
-	{
-		$thx_config_link = '<div style="float: right;"><a href="index.php?module=config&action=change&search=Gracias" style="color:#035488; background: url(../images/usercp/options.gif) no-repeat 0px 18px; padding: 18px; text-decoration: none;"> '. $db->escape_string($lang->thx_config) . '</a></div>';
-	}
-	else if ($mybb->settings['thx_active'] == 0)
-	{
-		$thx_config_link = '<div style="float: right;"><a href="index.php?module=config&action=change&search=Gracias" style="color:#035488; background: url(../images/error.gif) no-repeat 0px 18px; padding: 18px; text-decoration: none;"> '. $db->escape_string($lang->thx_disabled) . '</a></div>';
-	}
+	$thx_config_link = thx_getdata($thx_config_link);
 	
 	return array(
 		'name'			=>	$db->escape_string($lang->thx_title),
@@ -53,7 +59,7 @@ function thx_info()
 		'website'		=>	'https://github.com/WhiteNeo/thankyou-mybb-system',
 		'author'		=>	'Dark Neo',
 		'authorsite'	=>	'http://darkneo.skn1.com',
-		'version'		=>	'2.3.3',
+		'version'		=>	'2.4.3',
 		'guid'		    =>	'687d4b0701008936e97c6bf3970bb014',
         'compatibility' =>	'16*'
 	);
@@ -74,14 +80,24 @@ function thx_install()
 		INDEX (`adduid`, `pid`, `time`) 
 		);"
 	);
-	
+
+
 	if(!$db->field_exists("thx", "users"))
 	{
-		$sq[] = "ALTER TABLE ".TABLE_PREFIX."users ADD `thx` INT NOT NULL, ADD `thxcount` INT NOT NULL, ADD `thxpost` INT NOT NULL";
+		$sq[] = "ALTER TABLE ".TABLE_PREFIX."users ADD `thx` INT NOT NULL, ADD `thxcount` INT NOT NULL, ADD `thxpost` INT NOT NULL, ADD `thx_ammount` INT NOT NULL";
 	}
 	elseif (!$db->field_exists("thxpost", "users"))		
 	{
 		$sq[] = "ALTER TABLE ".TABLE_PREFIX."users ADD `thxpost` INT NOT NULL";
+	}
+	elseif (!$db->field_exists("thx_ammount", "users"))		
+	{
+		$sq[] = "ALTER TABLE ".TABLE_PREFIX."users ADD `thx_ammount` INT NOT NULL";
+	}
+	
+	if(!$db->field_exists("thx_max_ammount", "usergroups"))
+	{
+		$sq[] = "ALTER TABLE ".TABLE_PREFIX."usergroups ADD thx_max_ammount INT NOT NULL DEFAULT '10'";
 	}
 	
 	if($db->field_exists("thx", "posts"))
@@ -117,18 +133,30 @@ function thx_is_installed()
 
 function thx_activate()
 {
-	global $db, $lang;
+	global $db, $lang, $cache;
 	
-	$thx_tbl_keys = $db->query("SHOW KEYS FROM ".TABLE_PREFIX."thx WHERE Key_name='adduid'");
-	
-	if(!$db->fetch_field($thx_tbl_keys, "Key_name"))
-	{
-		$db->query("ALTER TABLE ".TABLE_PREFIX."thx ADD INDEX (`adduid`, `pid`, `time`)");
-	}
     if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
 	{
 		$lang->load("thx");
 	}
+
+	if (!$db->field_exists("thx_ammount", "users"))		
+	{
+		$sq[] = "ALTER TABLE ".TABLE_PREFIX."users ADD `thx_ammount` INT NOT NULL";
+	}
+	
+	if(!$db->field_exists("thx_max_ammount", "usergroups"))
+	{
+		$sq[] = "ALTER TABLE ".TABLE_PREFIX."usergroups ADD thx_max_ammount INT NOT NULL DEFAULT '10'";
+	}
+	
+	if(is_array($sq))
+	{
+		foreach($sq as $q)
+		{
+			$db->query($q);
+		}
+	}	
 	
 	$query_tid = $db->write_query("SELECT tid FROM ".TABLE_PREFIX."themes");
 	$themetid = $db->fetch_array($query_tid);
@@ -139,11 +167,10 @@ function thx_activate()
 		color: #424242;
 		background: transparent;
 		border: none;
-		padding: 6px 8px;
-		margin: -4px -2px;
+		padding: 0 1px;
 		border-radius: 4px;
 		text-decoration: none;
-		position: absolute;
+		position: relative;
 		font-size: 10px;
 		font-weight: bold;
 }
@@ -310,18 +337,9 @@ function thx_activate()
 	$thx_array = array(
 		'id'		=> "NULL",
 		'code'		=> "thanks",
-		'is_core'	=> "0"
 	);
 	$db->insert_query("alert_settings", $thx_array);
 	}
-
-	require MYBB_ROOT."inc/adminfunctions_templates.php";	
-	find_replace_templatesets("postbit", '#'.preg_quote('{$post[\'message\']}').'#', '<div id="thxpid_{$post[\'pid\']}">{$post[\'message\']}</div>', 0);		
-	find_replace_templatesets("postbit", '#'.preg_quote('{$post[\'button_rep\']}').'#', '{$post[\'button_rep\']}{$post[\'thx_counter\']}{$post[\'thx_list\']}{$post[\'thanks\']}');
-	find_replace_templatesets("postbit_classic", '#'.preg_quote('{$post[\'message\']}').'#', '<div id="thxpid_{$post[\'pid\']}">{$post[\'message\']}</div>', 0);		
-	find_replace_templatesets("postbit_classic", '#'.preg_quote('{$post[\'button_rep\']}').'#', '{$post[\'button_rep\']}{$post[\'thx_counter\']}{$post[\'thx_list\']}{$post[\'thanks\']}');		
-	find_replace_templatesets("showthread", "#".preg_quote('{$headerinclude}').'#','{$headerinclude}'."\n".'<script type="text/javascript" src="{$mybb->settings[\'bburl\']}/jscripts/thx.js"></script>');
-	find_replace_templatesets("codebuttons", "#".preg_quote('<script type="text/javascript" src="jscripts/editor.js?ver=1609"></script>').'#','<script type="text/javascript" src="jscripts/editor.js?ver=1609"></script>'."\n".'{$lang->thx_codebutton}');
 
 	$templategrouparray = array(
 		'prefix' => 'thanks',
@@ -340,9 +358,29 @@ function thx_activate()
 <script type=\"text/javascript\">if(use_xmlhttprequest == \"1\"){new PopupMenu(\"thx_menu_{\$post[\'pid\']}\");}</script>",
 		'sid' => '-2'
 		);	
-	$db->insert_query("templates", $templatearray);
+		$db->insert_query("templates", $templatearray);
+
+	$templatearray = array(
+		'title' => 'thanks_memprofile',
+		'template' => "<br />
+<table id=\"thx_profile\" border=\"0\" cellspacing=\"{\$theme[\'borderwidth\']}\" cellpadding=\"{\$theme[\'tablespace\']}\" class=\"tborder\">
+<tr>
+<td class=\"thead\"><strong>{\$lang->thx_title}</strong></td>
+</tr>
+<tr>
+<td class=\"trow1\">
+{\$memprofile[\'thx_detailed_info\']}
+<br />
+{\$memprofile[\'thx_info\']}
+</td>
+</tr>
+</table>
+<br />",
+		'sid' => '-2'
+		);
+	$db->insert_query("templates", $templatearray);	
 	
-		$templatearray = array(
+	$templatearray = array(
 		'title' => 'thanks_hide_tag',
 		'template' => "<div class=\"alerta_thx message\">{\$msg}</div>",
 		'sid' => '-2'
@@ -431,7 +469,22 @@ function thx_activate()
 		'sid' => '-2'
 		);
 	$db->insert_query("templates", $templatearray);	
-		
+
+	$thx_task = array(
+		"title" => "Thanks per day",
+		"description" => "Set all counters to 0 for every user on max ammount",
+		"file" => "thx",
+		"minute" => '0',
+		"hour" => '0',
+		"day" => '*',
+		"month" => '*',
+		"weekday" => '*',
+		"nextrun" => time() + (1*24*60*60),
+		"enabled" => '1',
+		"logging" => '1'
+	);
+	$db->insert_query("tasks", $thx_task);
+	
 	$thx_group = array(
 		"name"			=> "Gracias",
 		"title"			=> $db->escape_string($lang->thx_opt_title),
@@ -447,8 +500,8 @@ function thx_activate()
 		"title"			=> $db->escape_string($lang->thx_opt_enable),
 		"description"	=> $db->escape_string($lang->thx_opt_enable_desc),
 		"optionscode" 	=> "onoff",
-		"value"			=> '1',
-		"disporder"		=> '1',
+		"value"			=> 1,
+		"disporder"		=> 1,
 		"gid"			=> intval($gid),
 	);
 	
@@ -457,8 +510,8 @@ function thx_activate()
 		"title"			=> $db->escape_string($lang->thx_count_title),
 		"description"	=> $db->escape_string($lang->thx_count_desc),
 		"optionscode" 	=> "onoff",
-		"value"			=> '1',
-		"disporder"		=> '2',
+		"value"			=> 1,
+		"disporder"		=> 2,
 		"gid"			=> intval($gid),
 	);
 
@@ -467,8 +520,8 @@ function thx_activate()
 		"title"			=> $db->escape_string($lang->thx_counter_title),
 		"description"	=> $db->escape_string($lang->thx_counter_desc),
 		"optionscode" 	=> "onoff",
-		"value"			=> '1',
-		"disporder"		=> '3',
+		"value"			=> 1,
+		"disporder"		=> 3,
 		"gid"			=> intval($gid),
 	);	
 	$thx[] = array(
@@ -476,8 +529,8 @@ function thx_activate()
 		"title"			=> $db->escape_string($lang->thx_del_title),
 		"description"	=> $db->escape_string($lang->thx_del_desc),
 		"optionscode" 	=> "onoff",
-		"value"			=> '1',
-		"disporder"		=> '4',
+		"value"			=> 1,
+		"disporder"		=> 4,
 		"gid"			=> intval($gid),
 	);
 	
@@ -486,8 +539,8 @@ function thx_activate()
 		"title"			=> $db->escape_string($lang->thx_date_title),
 		"description"	=> $db->escape_string($lang->thx_date_desc),
 		"optionscode" 	=> "onoff",
-		"value"			=> '1',
-		"disporder"		=> '5',
+		"value"			=> 1,
+		"disporder"		=> 5,
 		"gid"			=> intval($gid),
 	);
 	
@@ -496,8 +549,8 @@ function thx_activate()
 		"title"			=> $db->escape_string($lang->thx_hide_title),
 		'description'   => $db->escape_string($lang->thx_hide_desc),
 		"optionscode" 	=> "yesno",
-		"value"			=> '1',
-		"disporder"		=> '6',
+		"value"			=> 1,
+		"disporder"		=> 6,
 		"gid"			=> intval($gid),
 	);
 
@@ -507,7 +560,7 @@ function thx_activate()
 		'description'   => $db->escape_string($lang->thx_hidetag_desc),
 		"optionscode" 	=> "text",
 		"value"			=> $db->escape_string($lang->thx_hidetag_value),
-		"disporder"		=> '7',
+		"disporder"		=> 7,
 		"gid"			=> intval($gid),
 	);	
 
@@ -517,7 +570,7 @@ function thx_activate()
 		"description"   => $db->escape_string($lang->thx_ebutton_desc),
 		"optionscode" 	=> "yesno",
 		"value"			=> 1,
-		"disporder"		=> '8',
+		"disporder"		=> 8,
 		"gid"			=> intval($gid),
 	);
 
@@ -526,8 +579,8 @@ function thx_activate()
 		"title"			=> $db->escape_string($lang->thx_gid_title),
 		"description"   => $db->escape_string($lang->thx_gid_desc),
 		"optionscode" 	=> "text",
-		"value"			=> '4',
-		"disporder"		=> '9',
+		"value"			=> 4,
+		"disporder"		=> 9,
 		"gid"			=> intval($gid),
 	);	
 
@@ -537,7 +590,7 @@ function thx_activate()
 		"description"   => $db->escape_string($lang->thx_ngid_desc),
 		"optionscode" 	=> "text",
 		"value"			=> '1,5,7',
-		"disporder"		=> '10',
+		"disporder"		=> 10,
 		"gid"			=> intval($gid),
 	);	
 		
@@ -545,24 +598,48 @@ function thx_activate()
         'name' 			=> "thx_reputation",
         'title' 		=> $db->escape_string($lang->thx_rep_title),
         'description' 	=> $db->escape_string($lang->thx_rep_desc),
-        'optionscode' 	=> 'select \n 1='.$db->escape_string($lang->thx_rep_op1).' \n 2='.$db->escape_string($lang->thx_rep_op2).' \n 3='.$db->escape_string($lang->thx_rep_op3),
-        'value' 		=> '2',
-        'disporder' 	=> '11',
+        'optionscode' 	=> 'select \n1='.$db->escape_string($lang->thx_rep_op1).' \n2='.$db->escape_string($lang->thx_rep_op2).' \n3='.$db->escape_string($lang->thx_rep_op3).' \n4='.$db->escape_string($lang->thx_rep_op4),
+        'value' 		=> 3,
+        'disporder' 	=> 11,
         'gid' 			=> intval($gid)
+    );  	
+
+    $thx[] = array(
+        'name' 			=> "thx_version",
+        'title' 		=> "version",
+        'description' 	=> "Version del plugin",
+        'optionscode' 	=> 'text',
+        'value' 		=> 243,
+        'disporder' 	=> 12,
+        'gid' 			=> 0
     );  	
 	
 	foreach($thx as $t)
 	{
 		$db->insert_query("settings", $t);
 	}
-	
+
+	require MYBB_ROOT."inc/adminfunctions_templates.php";	
+	find_replace_templatesets("postbit", '#'.preg_quote('{$post[\'button_rep\']}').'#', '{$post[\'button_rep\']}{$post[\'thx_counter\']}{$post[\'thx_list\']}{$post[\'thanks\']}');	
+	find_replace_templatesets("postbit", '#'.preg_quote('{$post[\'message\']}').'#', '<div id="thxpid_{$post[\'pid\']}">{$post[\'message\']}</div>');		
+	find_replace_templatesets("postbit_classic", '#'.preg_quote('{$post[\'message\']}').'#', '<div id="thxpid_{$post[\'pid\']}">{$post[\'message\']}</div>');		
+	find_replace_templatesets("postbit_classic", '#'.preg_quote('{$post[\'button_rep\']}').'#', '{$post[\'button_rep\']}{$post[\'thx_counter\']}{$post[\'thx_list\']}{$post[\'thanks\']}');		
+	find_replace_templatesets("showthread", "#".preg_quote('{$headerinclude}').'#','{$headerinclude}'."\n".'<script type="text/javascript" src="{$mybb->settings[\'bburl\']}/jscripts/thx.js"></script>');
+	find_replace_templatesets("codebuttons", "#".preg_quote('<script type="text/javascript" src="jscripts/editor.js?ver=1609"></script>').'#','<script type="text/javascript" src="jscripts/editor.js?ver=1609"></script>'."\n".'{$lang->thx_codebutton}');
+	find_replace_templatesets('member_profile', '#{\$profilefields}#', '{\$profilefields}
+{\$memprofile[\'thx_details\']}');
+
+	$cache->update_usergroups();
+   	$cache->update_forums();
+	$cache->update_tasks();	
+
 	rebuild_settings();
 }
 
 
 function thx_deactivate()
 {
-	global $db;
+	global $db, $cache;
     	$db->delete_query('themestylesheets', "name='thx_buttons.css'");
 		$query = $db->simple_select('themes', 'tid');
 		while($theme = $db->fetch_array($query))
@@ -582,15 +659,21 @@ function thx_deactivate()
 	find_replace_templatesets("postbit_classic", '#'.preg_quote('{$post[\'thx_counter\']}').'#', '', 0);
 	find_replace_templatesets("showthread", "#".preg_quote('<script type="text/javascript" src="{$mybb->settings[\'bburl\']}/jscripts/thx.js"></script>').'#', '', 0);
 	find_replace_templatesets("codebuttons", "#".preg_quote('{$lang->thx_codebutton}').'#', '', 0);
-
-	$db->delete_query("settings", "name IN ('thx_active', 'thx_count', 'thx_counter', 'thx_del', 'thx_hidemode', 'thx_hidesystem', 'thx_hidesystem_tag', 'thx_editor_button', 'thx_hidesystem_gid', 'thx_hidesystem_notgid', 'thx_reputation')");
+	find_replace_templatesets("member_profile", "#".preg_quote('{$memprofile[\'thx_details\']}').'#', '', 0);
+	
+	$db->delete_query("settings", "name IN ('thx_active', 'thx_count', 'thx_counter', 'thx_del', 'thx_hidemode', 'thx_hidesystem', 'thx_hidesystem_tag', 'thx_editor_button', 'thx_hidesystem_gid', 'thx_hidesystem_notgid', 'thx_reputation', 'thx_version')");
 	$db->delete_query("settinggroups", "name='Gracias'");
 	$db->delete_query("templategroups", "prefix='thanks'");
-	$db->delete_query("templates", "title IN('thanks_postbit_list', 'thanks_hide_tag', 'thanks_unhide_tag', 'thanks_guests_tag', 'thanks_admins_tag', 'thanks_results', 'thanks_results_none', 'thanks_content', 'thanks_page')");
+	$db->delete_query("templates", "title IN('thanks_postbit_list', 'thanks_memprofile', 'thanks_hide_tag', 'thanks_unhide_tag', 'thanks_guests_tag', 'thanks_admins_tag', 'thanks_results', 'thanks_results_none', 'thanks_content', 'thanks_page')");
 	if($db->table_exists("alert_settings")){
 		$db->delete_query("alert_settings", "code='thanks'");
 	}
 	$db->delete_query("settings", "name='myalerts_alert_thanks'");
+	$db->delete_query('tasks', 'file=\'thx\'');
+	
+	$cache->update_usergroups();
+   	$cache->update_forums();	
+	$cache->update_tasks();	
 	
 	rebuild_settings();
 }
@@ -601,7 +684,12 @@ function thx_uninstall()
 
 	if($db->field_exists("thx", "users"))
 	{
-		$db->query("ALTER TABLE ".TABLE_PREFIX."users DROP thx, DROP thxcount, DROP thxpost");
+		$db->query("ALTER TABLE ".TABLE_PREFIX."users DROP thx, DROP thxcount, DROP thxpost, DROP thx_ammount");
+	}
+
+	if($db->field_exists("thx_max_ammount", "usergroups"))
+	{
+		$db->query("ALTER TABLE ".TABLE_PREFIX."usergroups DROP thx_max_ammount");
 	}
 	
 	if($db->field_exists("pthx", "posts"))
@@ -613,6 +701,46 @@ function thx_uninstall()
 	{
 		$db->query("DROP TABLE ".TABLE_PREFIX."thx");
 	}
+	
+}
+
+function thx_getdata($thx_config_link)
+{
+	global $mybb, $db, $lang, $thx_config_link, $alertas;
+
+	$thx_config_link = '';
+
+	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
+	{
+		$lang->load("thx");
+	}
+	
+	if ($mybb->settings['thx_active'] == 1)
+	{
+		$thx_config_link = '<div style="float: right;"><a href="index.php?module=config&action=change&search=Gracias" style="color:#035488; background: url(../images/usercp/options.gif) no-repeat 0px 18px; padding: 18px; text-decoration: none;"> '. $db->escape_string($lang->thx_config) . '</a></div>';
+		if($mybb->settings['myalerts_enabled'] == 1){
+			$alertas = myalerts_info();
+			$thx_alerts = $alertas['version'];
+		}
+		if($mybb->settings['myalerts_enabled'] == 1&& $mybb->settings['myalerts_alert_thanks'] == 0){
+			$thx_config_link .= '<div style="float: left;"><a href="index.php?module=config&action=change&search=myalerts" style="color: rgba(136, 17, 3, 1); background: url(../images/error.gif) no-repeat 0px 18px; padding: 18px; text-decoration: none;"> '. $db->escape_string($lang->thx_config_alerts) . '</a></div><br />';
+			$thx_config_link .= '<br /><div><span style="color: rgba(34, 136, 3, 1); background: url(../images/valid.gif) no-repeat 0px 18px; padding: 18px; text-decoration: none;"> <a href="'.$mybb->settings['bburl'].'/inc/plugins/MyAlerts/force_enable_alerts.php"> '. $db->escape_string($lang->thx_config_alerts_force_all) . '</a></div>';
+		}
+		else if($mybb->settings['myalerts_enabled'] == 1 && $mybb->settings['myalerts_alert_thanks'] == 1 && $thx_alerts >= 1.05){
+			$thx_config_link .= '<div style="float: left;"><span style="color: rgba(34, 136, 3, 1); background: url(../images/valid.gif) no-repeat 0px 18px; padding: 18px; text-decoration: none;"> ' . $db->escape_string($lang->thx_config_alerts_thx) . '</a></div><br />';		
+			$thx_config_link .= '<br /><div><span style="color: rgba(34, 136, 3, 1); background: url(../images/valid.gif) no-repeat 0px 18px; padding: 18px; text-decoration: none;"> <a href="'.$mybb->settings['bburl'].'/inc/plugins/MyAlerts/force_enable_alerts.php"> '. $db->escape_string($lang->thx_config_alerts_force_all) . '</a></div>';
+		}
+		else if($mybb->settings['myalerts_enabled'] == 1 && $thx_alerts <= 1.04){
+			$thx_config_link .= '<div style="float: left;"><span style="color: rgba(136, 17, 3, 1); background: url(../images/error.gif) no-repeat 0px 18px; padding: 18px; text-decoration: none;">  ' . $db->escape_string($lang->thx_config_alerts_none) . '</a></div><br />';		
+		}
+		
+	}
+	else if ($mybb->settings['thx_active'] == 0)
+	{
+		$thx_config_link = '<div style="float: right; color: rgba(136, 17, 3, 1); background: url(../images/error.gif) no-repeat 0px 18px; padding: 18px; text-decoration: none;"> '. $db->escape_string($lang->thx_disabled) . '</div>';
+	}
+		
+	return $thx_config_link;
 }
 
 function thx_global_start()
@@ -620,7 +748,7 @@ function thx_global_start()
 
 	global $mybb, $session, $lang;
 
-    if (!$mybb->settings['thx_hidesystem']  || !empty($session->is_spider))
+    if ($mybb->settings['thx_active'] == 0 || !empty($session->is_spider))
     {
         return false;
     }
@@ -632,7 +760,7 @@ function thx_global_start()
 	
 	if(isset($GLOBALS['templatelist']))
 	{
-		$GLOBALS['templatelist'] .= ",thanks_postbit_list,thanks_hide_tag,thanks_unhide_tag,thanks_guests_tag,thanks_admins_tag,thanks_results,thanks_results_none,thanks_content,thanks_page";
+		$GLOBALS['templatelist'] .= ",thanks_postbit_list,thanks_memprofile, thanks_hide_tag,thanks_unhide_tag,thanks_guests_tag,thanks_admins_tag,thanks_results,thanks_results_none,thanks_content,thanks_page";
 	}
 }
 
@@ -640,17 +768,22 @@ function thx_code(&$message)
 {
     global $db, $post, $mybb, $lang, $session, $theme, $altbg, $templates, $thx_cache, $forum, $fid, $pid, $announcement, $postrow, $hide_tag;
 
-    if (!$mybb->settings['thx_hidesystem']  || !empty($session->is_spider))
+	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
+		{
+			$lang->load("thx");
+		}
+
+    if ($mybb->settings['thx_active'] == 0 || !$mybb->settings['thx_hidesystem']  || !empty($session->is_spider))
         {
           return false;
         }
-
+		
         $forum_gid = explode(',', $mybb->settings['thx_hidesystem_gid']);
 		$forum_notgid = explode(',', $mybb->settings['thx_hidesystem_notgid']);
 		$url = $mybb->settings['bburl'];
         $hide_tag = $mybb->settings['thx_hidesystem_tag'];	
-		
-		if(THIS_SCRIPT == "syndication.php"){
+
+		if(THIS_SCRIPT == "syndication.php" || THIS_SCRIPT == "search.php"){
 		   $msg = $lang->thx_hide_sindycation; 
 		   eval("\$caja = \"".$templates->get("thanks_guests_tag",1,0)."\";");		  
 		   $message = preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is",$caja,$message);	
@@ -658,11 +791,6 @@ function thx_code(&$message)
 		
 		if($forum['fid'] == 0 || $forum['fid'] == ''){$forum['fid'] = $fid;}
 		
-		if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
-		{
-			$lang->load("thx");
-		}
-
 		if($post['pid'] == 0 || $post['pid'] == ''){
 		switch(THIS_SCRIPT)
 		{
@@ -671,8 +799,12 @@ function thx_code(&$message)
 		default: $post['pid'] = $pid;
 		}
 		}
-		
-        $must_thanks = $mybb->settings['thx_hidesystem_code'];
+
+		if($mybb->input['highlight']){
+			$message = preg_replace("#$hide_tag(.*)$hide_tag#is",$lang->thx_hide_text,$message);
+		}
+				
+        $must_thanks = $mybb->settings['thx_hidesystem_tag'];
 
     if(in_array($mybb->user['usergroup'], $forum_gid))
     {
@@ -683,6 +815,9 @@ function thx_code(&$message)
       
     else if(in_array($mybb->user['usergroup'], $forum_notgid) || $mybb->user['uid'] == 0)
     {	 
+		if($mybb->input['highlight']){		
+			$message = preg_replace("#$hide_tag(.*)$hide_tag#is",$lang->thx_hide_text,$message);
+		}	
 	   $msg = $lang->thx_hide_register; 
 	   eval("\$caja = \"".$templates->get("thanks_guests_tag",1,0)."\";");		  
 	   $message = preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is",$caja,$message);
@@ -717,6 +852,9 @@ function thx_code(&$message)
 	}
 	else
 	{
+		if($mybb->input['highlight']){		
+			$message = preg_replace("#$hide_tag(.*)$hide_tag#is",$lang->thx_hide_text,$message);
+		}
 		$msg = $lang->thx_hide_text;  
 	    eval("\$caja = \"".$templates->get("thanks_hide_tag",1,0)."\";");		 
         $message = preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is",$caja,$message);
@@ -734,12 +872,12 @@ function thx_quote(&$quoted_post)
 {
     global $mybb, $session, $templates, $lang, $hide_tag;
 
-    if (!$mybb->settings['thx_hidesystem']  || !empty($session->is_spider))
+		if ($mybb->settings['thx_active'] == '0' || $mybb->settings['thx_hidesystem'] == '0')
         {
           return false;
         }
 
-        if ($mybb->settings['thx_hidesystem'] == '1' && $mybb->settings['thx_hidetag'] == '1'){
+        else if ($mybb->settings['thx_hidesystem'] == '1'){
 		  $hide_tag = $mybb->settings['thx_hidesystem_tag'];	
           $quoted_post['message'] = preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is","", $quoted_post['message']);
         }
@@ -759,8 +897,6 @@ function thx(&$post)
 	return false;
 	}
 
-	if ($mybb->settings['thx_hidesystem'] != 0)
-	{
 	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
 	{
 		$lang->load("thx");
@@ -789,41 +925,155 @@ function thx(&$post)
 	}
  	if($mybb->user['uid'] != 0 && $mybb->user['uid'] != $post['uid'])
 	{
-	    $post['button_rep'] = "";
-		if(!$b)
-		{
-			$post['thanks'] = "<a id=\"a{$post['pid']}\" onclick=\"javascript:return thx({$post['pid']});\" href=\"showthread.php?action=thank&amp;tid={$post['tid']}&amp;pid={$post['pid']}\">
-			 <span class=\"thx_buttons\" id=\"sp_{$post['pid']}\"><span class=\"gracias\"> {$lang->thx_button_add}</span></span></a>";
+		$ammount =intval($mybb->user['thx_ammount']);
+		$max_ammount = intval($mybb->usergroup['thx_max_ammount']);		
+		if($mybb->settings['thx_reputation'] == 3 || $mybb->settings['thx_reputation'] == 4){
+			$post['button_rep'] = "";
 		}
-		else if($mybb->settings['thx_del'] == "1")
-		{
+		if($ammount > $max_ammount){		
+			$post['thanks'] = "<img src=\"images/error.gif\" alt=\"thx per day exceed\" />";
+		}				
+		else if(!$b){
+			// Verify if AJAX enabled for MyBB
+			if($mybb->settings['use_xmlhttprequest'] == 1){
+				$post['thanks'] = "<a id=\"a{$post['pid']}\" onclick=\"javascript:return thx({$post['pid']});\" href=\"showthread.php?action=thank&amp;tid={$post['tid']}&amp;pid={$post['pid']}\">
+			<span class=\"thx_buttons\" id=\"sp_{$post['pid']}\"><span class=\"gracias\"> {$lang->thx_button_add}</span></span></a>";			
+			}
+			else{
+				$post['thanks'] = "<a id=\"a{$post['pid']}\" href=\"showthread.php?action=thank&amp;tid={$post['tid']}&amp;pid={$post['pid']}\">
+			<span class=\"thx_buttons\" id=\"sp_{$post['pid']}\"><span class=\"gracias\"> {$lang->thx_button_add}</span></span></a>";
+			}
+		}
+		else if($mybb->settings['thx_del'] == "1"){
+			// Verify if AJAX enabled for MyBB
+			if($mybb->settings['use_xmlhttprequest'] == 1){		
 			$post['thanks'] = "<a id=\"a{$post['pid']}\" onclick=\"javascript:return rthx({$post['pid']});\" href=\"showthread.php?action=remove_thank&amp;tid={$post['tid']}&amp;pid={$post['pid']}\">
-			<span class=\"thx_buttons\" id=\"sp_{$post['pid']}\"><span class=\"egracias\"> {$lang->thx_button_del}</span></span></a>";	 
-		}	
-		else
-		{
+		<span class=\"thx_buttons\" id=\"sp_{$post['pid']}\"><span class=\"egracias\"> {$lang->thx_button_del}</span></span></a>";	 
+			}
+			else{
+			$post['thanks'] = "<a id=\"a{$post['pid']}\" href=\"showthread.php?action=remove_thank&amp;tid={$post['tid']}&amp;pid={$post['pid']}\">
+		<span class=\"thx_buttons\" id=\"sp_{$post['pid']}\"><span class=\"egracias\"> {$lang->thx_button_del}</span></span></a>";	 
+			}			
+		}		
+		else{
 			$post['thanks'] = "";
 		}
 			eval("\$post['thx_list'] .= \"".$templates->get("thanks_postbit_list")."\";");
 	}
-    }
+
 	$thx_pid = $post['pid'];
 	if($mybb->settings['thx_count'] == "1")
 	{
 		$protect = "&my_post_key={$mybb->post_code}";	
 		$post['thanks_count'] = $lang->sprintf($lang->thx_thank_count, $post['thx'], $post['uid'].$protect, $post['pid']);
 		$post['thanked_count'] = $lang->sprintf($lang->thx_thanked_count, $post['thxcount'], $post['uid'].$protect, $post['pid']);
-		$post['user_details'] .= $post['thanks_count'] . "<br />" . $post['thanked_count'];
+		$post['user_details'] .= "<br />" .$post['thanks_count'] . "<br />" . $post['thanked_count'];
 	}
 	else if ($mybb->settings['thx_count'] == "0"){
-		$post['thanks_count'] = "<span id=\"thx_thanked_{$post['pid']}></span>";
-		$post['thanked_count'] = "<span id=\"thx_thanks_{$post['pid']}></span>";
+		$post['thanks_count'] = "<span id=\"thx_thanked_{$post['pid']}\" style=\"display:none\"></span>";
+		$post['thanked_count'] = "<span id=\"thx_thanks_{$post['pid']}\" style=\"display:none\"></span>";
+		$post['user_details'] .= $post['thanks_count'] . "" . $post['thanked_count'];
 	}
+}
+
+/*Sucede al hacer una edición completa...
+function thx_edit(){
+    global $mybb, $post, $message, $fid, $lang, $session, $theme, $altbg, $templates;
+
+	if(!$mybb->settings['thx_active'] || !empty($session->is_spider))
+	{
+		return false;
+	}
+	
+    $forum_notgid = explode(',', $mybb->settings['thx_hidesystem_notgid']);
+	if(in_array($mybb->user['usergroup'], $forum_notgid) && THIS_SCRIPT == "showthread.php"){
+	return false;
+	}
+
+	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
+	{
+		$lang->load("thx");
+	}
+	
+	if(THIS_SCRIPT == "editpost.php" || $mybb->user['uid'] != $post['uid'] && THIS_SCRIPT == "editpost.php")
+	{
+	    $hide_tag = $mybb->settings['thx_hidesystem_tag'];	
+        $message = preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is","",$message);
+	}
+}
+
+//Sucede al hacer una edición rápida del mensaje...
+function thx_qedit(){
+	global $mybb, $post;
+	if(THIS_SCRIPT == "showthread.php" && $mybb->input['action'] == "edit_post"){
+	$post = get_post($mybb->input['pid']);
+	
+	if(!$post['pid'])
+	{
+		xmlhttp_error($lang->post_doesnt_exist);
+	}
+
+	if($mybb->input['action'] == "edit_post" && $mybb->user['uid'] != $post['uid'])
+	{
+		
+		if($mybb->input['do'] == "get_post"){
+		xmlhttp_error("Can't use this button");
+
+		$hide_tag = $mybb->settings['thx_hidesystem_tag'];			
+		$post['message'] .= preg_replace("#\[$hide_tag\](.*?)\[/$hide_tag\]#is","",$post['message']);	
+		
+		// Enviar el contenido del mensaje cambiado a la plantilla - no funciona :( debes agregar el código directo.
+		eval("\$inline_editor = \"".$templates->get("xmlhttp_inline_post_editor")."\";");
+		}
+	}
+	}
+	else{
+		return false;
+	}
+}*/	
+
+function thx_memprofile()
+{
+	global $db, $mybb, $lang, $session, $memprofile, $cache, $templates;
+	
+    if ($mybb->settings['thx_active'] == 0 || !empty($session->is_spider))
+    {
+        return false;
+    }
+	
+    $forum_notgid = explode(',', $mybb->settings['thx_hidesystem_notgid']);
+	if(in_array($mybb->user['usergroup'], $forum_notgid)){
+		return false;
+	}
+
+	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
+	{
+		$lang->load("thx");
+	}
+
+		$protect = "&my_post_key={$mybb->post_code}";	
+		$memprofile['thanks_count'] = $lang->sprintf($lang->thx_thank_count, $memprofile['thx'], $memprofile['uid'].$protect, $memprofile['pid']);
+		$memprofile['thanked_count'] = $lang->sprintf($lang->thx_thanked_count, $memprofile['thxcount'], $memprofile['uid'].$protect, $memprofile['pid']);
+		$memprofile['thx_info'] = "<br />" .$memprofile['thanks_count'] . "<br />" . $memprofile['thanked_count'];
+		$memprofile['thx_detailed_info'] = $lang->sprintf($lang->thx_thank_details, $memprofile['thx'], $memprofile['thxpost'],$memprofile['thxcount']);	
+		$ammount =intval($mybb->user['thx_ammount']);
+		$max_ammount = intval($mybb->usergroup['thx_max_ammount']);		
+		//echo var_dump($memprofile);
+		if($memprofile['uid'] == $mybb->user['uid']){
+		$memprofile['thx_info'] .= $lang->sprintf($lang->thx_thank_details_extra, $ammount, $max_ammount);
+		}		
+		eval("\$memprofile['thx_details'] .= \"".$templates->get("thanks_memprofile")."\";");		
+		
 }
 
 function thx_load_lang()
 {
 	global $lang;
+
+	if(!$mybb->settings['thx_active'] || !empty($session->is_spider))
+	{
+		return false;
+	}
 
 	if (!$lang->thanks) {
 		$lang->load('thx');
@@ -832,28 +1082,39 @@ function thx_load_lang()
 
 function thx_addAward()
 {
-	global $mybb, $Alerts, $post;
+	global $db, $mybb, $Alerts, $post;
+
+	if(!$mybb->settings['thx_active'] || !empty($session->is_spider))
+	{
+		return false;
+	}
+
 	$uid = $post['uid'];
 	$tid = $post['tid'];
 	$pid = $post['pid'];
 	$subject = $post['subject'];
 	$fid = $post['fid'];
-	$time = time();
-	if ($mybb->settings['myalerts_enabled'] AND $Alerts instanceof Alerts)
-	{
-		$Alerts->addAlert((int) $uid, 'thanks', (int)$tid, (int) $mybb->user['uid'], 
-		array(
-			'tid' 		=> $tid,
-			'pid'		=> $pid,
-			't_subject' => $subject,
-			'fid'		=> $fid
-		)); 
+	
+	if ($mybb->settings['myalerts_enabled'] AND $Alerts instanceof Alerts){
+	
+			$Alerts->addAlert((int) $uid, 'thanks', (int)$tid, (int) $mybb->user['uid'], 
+			array(
+				'tid' 		=> $tid,
+				'pid'		=> $pid,
+				't_subject' => $subject,
+				'fid'		=> $fid
+			)); 
 	}
 }
 
 function thx_parse(&$alert)
 {
 	global $mybb, $lang, $parser;
+
+	if(!$mybb->settings['thx_active'] || !empty($session->is_spider))
+	{
+		return false;
+	}
 	
 	if (!$lang->thanks) {
 		$lang->load('thx');
@@ -868,7 +1129,6 @@ function thx_parse(&$alert)
     $alert['userLink'] = get_profile_link($alert['uid']);
     $alert['user'] = format_name($alert['username'], $alert['usergroup'], $alert['displaygroup']);
     $alert['user'] = build_profile_link($alert['user'], $alert['uid']);
- 	$alert['dateline'] = my_date($mybb->settings['timeformat'], $alert['dateline']);
 
     if ($alert['unread'] == 1) {
         $alert['unreadAlert'] = ' unreadAlert';
@@ -879,28 +1139,43 @@ function thx_parse(&$alert)
 	if ($alert['alert_type'] == 'thanks' AND $mybb->user['myalerts_settings']['thanks'])
 	{
         $alert['postLink'] = $mybb->settings['bburl'].'/'.get_post_link($alert['content']['pid'], $alert['content']['tid']).'#pid'.$alert['content']['pid'];
-        $alert['message'] = $lang->sprintf($lang->thanks_alert, $alert['user'], $alert['postLink'], htmlspecialchars_uni($parser->parse_badwords($alert['content']['t_subject'])), $alert['dateline']);
+        $alert['message'] = $lang->sprintf($lang->thanks_alert, $alert['user'], $alert['postLink'], htmlspecialchars_uni($parser->parse_badwords($alert['content']['t_subject'])),$alert['dateline']);
 		$alert['rowType'] = 'thanks';
 	}
 }
 
 function do_action()
 {
-	global $mybb, $db, $lang, $theme, $templates, $count, $forum, $thread, $post, $attachcache, $parser, $pid,$tid;
-	
+	global $mybb, $db, $lang, $theme, $templates, $count, $forum, $thread, $post, $attachcache, $parser, $pid,$tid,$ammount, $max_ammount;
+
+	if(!$mybb->settings['thx_active'] || !empty($session->is_spider))
+	{
+		return false;
+	}
+
 	if(($mybb->input['action'] != "thankyou"  &&  $mybb->input['action'] != "remove_thankyou") || $mybb->request_method != "post")
 	{
 		return false;
 	}
-		
+	
     $forum_notgid = explode(',', $mybb->settings['thx_hidesystem_notgid']);
+	
 	if(in_array($mybb->user['usergroup'], $forum_notgid) && THIS_SCRIPT == "showthread.php"){
-	return false;
+		return false;
 	}
 	
 	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
 	{
 		$lang->load("thx");
+	}
+	
+	$ammount =intval($mybb->user['thx_ammount']);
+	$max_ammount = intval($mybb->usergroup['thx_max_ammount']);	
+	// if you get max thanks per day get an error...
+	if($ammount > $max_ammount){
+		$error = $lang->sprintf($lang->thx_exceed, $max_ammount);
+		xmlhttp_error($error);
+		return;
 	}
 
 	$post = get_post($mybb->input['pid']);
@@ -910,10 +1185,6 @@ function do_action()
 		xmlhttp_error($lang->post_doesnt_exist);
 	}
 
-	$thread = get_thread($post['tid']);
-	$forum = get_forum($thread['fid']);
-	$post['fid'] = intval($forum['fid']);
-	$pid = intval($forum['pid']);
 	$pid = intval($mybb->input['pid']);
 	$tid = intval($mybb->input['tid']);
 	
@@ -925,9 +1196,9 @@ function do_action()
 	{
 		do_thank($pid);
 		if($mybb->settings['thx_counter'] == "1"){
-		$count = intval($post['pthx'] + 1);
+			$count = intval($post['pthx'] + 1);
 		}
-		if($mybb->settings['thx_reputation'] == 3){
+		if($mybb->settings['thx_reputation'] == 2 || $mybb->settings['thx_reputation'] == 4){
 			thx_addAward();
 		}
 	}
@@ -935,11 +1206,10 @@ function do_action()
 	{
 		del_thank($pid);
 		if($mybb->settings['thx_counter'] == "1"){
-		$count = intval($post['pthx'] - 1);
+			$count = intval($post['pthx'] - 1);
 		}
 	}	
 
-		$post = get_post($mybb->input['pid']);
 		if($mybb->settings['thx_count'] == 1){
 			$query = $db->query("
 				SELECT uid, thxcount
@@ -952,17 +1222,26 @@ function do_action()
 			}	
 		}
 		else if($mybb->settings['thx_count'] == "0"){
-		$thxcount = "";
+			$thxcount = "";
 		}
 		
 	$nonead = 0;
 	$list = build_thank($pid, $nonead);
 	if($mybb->settings['thx_counter'] == "1"){
-	if ($count == 0){$count="<span class=\"neutral_thx\">".$count."</span>";}
-	else if ($count >= 1){$count="<span class=\"good_thx\">".$count."</span>";}
-	else if ($count > 0){$count="<span class=\"bad_thx\">".$count."</span>";}
+		if ($count == 0){
+			$count="<span class=\"neutral_thx\">".$count."</span>";
+		}
+		else if ($count >= 1){
+			$count="<span class=\"good_thx\">".$count."</span>";
+		}
+		else if ($count > 0){
+			$count="<span class=\"bad_thx\">".$count."</span>";
+		}
 	}
-	else{$count="<span id=\"counter{$post['pid']}\"></span>";;}
+	else{
+		$count="<span id=\"counter{$post['pid']}\"></span>";
+	}
+	
 	$post['thx_counter'] = $count;
 	
 	require_once MYBB_ROOT."inc/functions_post.php";
@@ -1045,8 +1324,10 @@ function do_action()
 			}
 			break;
 	}
+	
 	$post = $parser->parse_message($post['message'], $parser_options);
-	header('Content-Type: text/xml');
+
+	header("Content-type: text/xml; charset={$charset}");
 
 	if(!$mybb->settings['thx_del']){
 	$output = "<thankyou>
@@ -1063,7 +1344,7 @@ function do_action()
 		$output .= "<span class=\"gracias\">{$lang->thx_button_add}</span>";
 	}	
 	$output .= "]]></button>
-			    <post><![CDATA[$post]]></post>	
+			    <post><![CDATA[{$post}]]></post>	
 				<del>{$mybb->settings['thx_del']}</del>	
 			 </thankyou>";
 	echo $output;	
@@ -1083,7 +1364,7 @@ function do_action()
 		$output .= "<span class=\"gracias\">{$lang->thx_button_add}</span>";
 	}	
 	$output .= "]]></button>
-			    <post><![CDATA[$post]]></post>	
+			    <post><![CDATA[{$post}]]></post>	
 				<del>{$mybb->settings['thx_del']}</del>	
 			 </thankyou>";
 	echo $output;
@@ -1093,11 +1374,11 @@ function do_action()
 function thx_editor(&$edit_lang){
 	global $mybb, $lang;
 
-	if($mybb->settings['thx_editor_button'] == 0)
+	if(!$mybb->settings['thx_active'] || !empty($session->is_spider) || $mybb->settings['thx_editor_button'] == 0)
 	{
 		return false;
 	}
-	
+
 	if(!$lang->thx)
 	{
 		$lang->load('thx');
@@ -1115,6 +1396,11 @@ EOF;
 function direct_action()
 {
 	global $mybb, $lang, $tid, $pid;
+
+	if(!$mybb->settings['thx_active'] || !empty($session->is_spider))
+	{
+		return false;
+	}
 	
 	if($mybb->input['action'] != "thank"  &&  $mybb->input['action'] != "remove_thank")
 	{
@@ -1136,7 +1422,7 @@ function direct_action()
 	if($mybb->input['action'] == "thank" )
 	{
 		do_thank($pid);
-		if($mybb->settings['thx_reputation'] == 3){
+		if($mybb->settings['thx_reputation'] == 4){
 			thx_addAward();
 		}
 	}
@@ -1152,6 +1438,12 @@ function direct_action()
 function build_thank(&$pid, &$is_thx)
 {
 	global $db, $mybb, $lang, $thx_cache, $message;
+
+	if(!$mybb->settings['thx_active'] || !empty($session->is_spider))
+	{
+		return false;
+	}
+		
 	$is_thx = 0;
 	
 	$pid = intval($pid); 
@@ -1212,6 +1504,11 @@ function do_thank(&$pid)
 {
 	global $db, $mybb, $lang;
 	
+	if(!$mybb->settings['thx_active'] || !empty($session->is_spider))
+	{
+		return false;
+	}
+		
 	$pid = intval($pid);
 	if(file_exists($lang->path."/".$lang->language."/thx.lang.php"))
 	{
@@ -1245,23 +1542,22 @@ function do_thank(&$pid)
 		);
 		
 		$time = time();
-		if($mybb->settings['thx_reputation'] == 2){
+		if($mybb->settings['thx_reputation'] == 1 || $mybb->settings['thx_reputation'] == 2){
 		$sq = array (
-			"UPDATE ".TABLE_PREFIX."users SET thx=thx+1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
-			"UPDATE ".TABLE_PREFIX."users SET thxcount=thxcount+1, reputation = reputation+1,thxpost=CASE( SELECT COUNT(*) FROM ".TABLE_PREFIX."thx WHERE pid='{$pid}' LIMIT 1) WHEN 0 THEN thxpost+1 ELSE thxpost END WHERE uid='{$database['uid']}' LIMIT 1",					
+			"UPDATE ".TABLE_PREFIX."users SET thx_ammount=thx_ammount+1,thx=thx+1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
+			"UPDATE ".TABLE_PREFIX."users SET thxcount=thxcount+1,thxpost=CASE( SELECT COUNT(*) FROM ".TABLE_PREFIX."thx WHERE pid='{$pid}' LIMIT 1) WHEN 0 THEN thxpost+1 ELSE thxpost END WHERE uid='{$database['uid']}' LIMIT 1",					
 	        "UPDATE ".TABLE_PREFIX."posts SET pthx=pthx+1 WHERE pid='{$pid}' LIMIT 1",
-            "INSERT INTO ".TABLE_PREFIX."reputation (uid, adduid, pid, reputation, dateline, comments) VALUES ('{$tmp['uid']}', '{$mybb->user['uid']}', '{$pid}', 1, '{$time}', '{$lang->thx_thankyou}')"			
 			);
-		}else if($mybb->settings['thx_reputation'] == 3){
+		}else if($mybb->settings['thx_reputation'] == 3 || $mybb->settings['thx_reputation'] == 4){
 		$sq = array (
-			"UPDATE ".TABLE_PREFIX."users SET thx=thx+1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
+			"UPDATE ".TABLE_PREFIX."users SET thx_ammount=thx_ammount+1,thx=thx+1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
 			"UPDATE ".TABLE_PREFIX."users SET thxcount=thxcount+1, reputation = reputation+1,thxpost=CASE( SELECT COUNT(*) FROM ".TABLE_PREFIX."thx WHERE pid='{$pid}' LIMIT 1) WHEN 0 THEN thxpost+1 ELSE thxpost END WHERE uid='{$database['uid']}' LIMIT 1",					
 	        "UPDATE ".TABLE_PREFIX."posts SET pthx=pthx+1 WHERE pid='{$pid}' LIMIT 1",
-            "INSERT INTO ".TABLE_PREFIX."reputation (uid, adduid, pid, reputation, dateline, comments) VALUES ('{$tmp['uid']}', '{$mybb->user['uid']}', '{$pid}', 1, '{$time}', '{$lang->thx_thankyou}')"			
+            "INSERT INTO ".TABLE_PREFIX."reputation (uid, adduid, pid, reputation, dateline, comments) VALUES ('{$tmp['uid']}', '{$mybb->user['uid']}', '{$pid}', 1, '{$time}', '{$lang->thx_thankyou}')"
 			);
 		}else{
 		$sq = array (
-			"UPDATE ".TABLE_PREFIX."users SET thx=thx+1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
+			"UPDATE ".TABLE_PREFIX."users SET thx_ammount=thx_ammount+1,thx=thx+1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
 			"UPDATE ".TABLE_PREFIX."users SET thxcount=thxcount+1, thxpost=CASE( SELECT COUNT(*) FROM ".TABLE_PREFIX."thx WHERE pid='{$pid}' LIMIT 1) WHEN 0 THEN thxpost+1 ELSE thxpost END WHERE uid='{$database['uid']}' LIMIT 1",					
 	        "UPDATE ".TABLE_PREFIX."posts SET pthx=pthx+1 WHERE pid='{$pid}' LIMIT 1"
 			);		
@@ -1280,7 +1576,12 @@ function do_thank(&$pid)
 function del_thank(&$pid)
 {
 	global $mybb, $db;
-	
+
+	if(!$mybb->settings['thx_active'] || !empty($session->is_spider))
+	{
+		return false;
+	}
+		
 	$pid = intval($pid);
 	if($mybb->settings['thx_del'] != "1")
 	{
@@ -1298,15 +1599,30 @@ function del_thank(&$pid)
 		
 		$time = time();
 
-		if($mybb->settings['thx_reputation'] == 2){
+		if($mybb->settings['thx_reputation'] == 1){
+		$sq = array (
+			"UPDATE ".TABLE_PREFIX."users SET thx=thx-1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
+			"UPDATE ".TABLE_PREFIX."users SET thxcount=thxcount-1, thxpost=CASE(SELECT COUNT(*) FROM ".TABLE_PREFIX."thx WHERE pid='{$pid}' LIMIT 1) WHEN 0 THEN thxpost-1 ELSE thxpost END WHERE uid='{$uid}' LIMIT 1",
+			"UPDATE ".TABLE_PREFIX."posts SET pthx=pthx-1 WHERE pid='{$pid}' LIMIT 1"
+		);
+		$db->delete_query("thx", "txid='{$thxid}'", "1");
+	    }else if($mybb->settings['thx_reputation'] == 2){
+		$sq = array (
+			"UPDATE ".TABLE_PREFIX."users SET thx=thx-1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
+			"UPDATE ".TABLE_PREFIX."users SET thxcount=thxcount-1, thxpost=CASE(SELECT COUNT(*) FROM ".TABLE_PREFIX."thx WHERE pid='{$pid}' LIMIT 1) WHEN 0 THEN thxpost-1 ELSE thxpost END WHERE uid='{$uid}' LIMIT 1",
+			"UPDATE ".TABLE_PREFIX."posts SET pthx=pthx-1 WHERE pid='{$pid}' LIMIT 1"
+		);
+		$db->delete_query("alerts", "from_id='{$mybb->user['uid']}' && unread='1' && alert_type='thanks'");		
+		$db->delete_query("thx", "txid='{$thxid}'", "1");		
+	    }else if($mybb->settings['thx_reputation'] == 3){
 		$sq = array (
 			"UPDATE ".TABLE_PREFIX."users SET thx=thx-1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
 			"UPDATE ".TABLE_PREFIX."users SET thxcount=thxcount-1, reputation=reputation-1, thxpost=CASE(SELECT COUNT(*) FROM ".TABLE_PREFIX."thx WHERE pid='{$pid}' LIMIT 1) WHEN 0 THEN thxpost-1 ELSE thxpost END WHERE uid='{$uid}' LIMIT 1",
 			"UPDATE ".TABLE_PREFIX."posts SET pthx=pthx-1 WHERE pid='{$pid}' LIMIT 1"
 		);
 		$db->delete_query("reputation", "adduid='{$mybb->user['uid']}' && pid='{$pid}'");
-		$db->delete_query("thx", "txid='{$thxid}'", "1");
-	    }else if($mybb->settings['thx_reputation'] == 3){
+		$db->delete_query("thx", "txid='{$thxid}'", "1");		
+	    }else if($mybb->settings['thx_reputation'] == 4){
 		$sq = array (
 			"UPDATE ".TABLE_PREFIX."users SET thx=thx-1 WHERE uid='{$mybb->user['uid']}' LIMIT 1",
 			"UPDATE ".TABLE_PREFIX."users SET thxcount=thxcount-1, reputation=reputation-1, thxpost=CASE(SELECT COUNT(*) FROM ".TABLE_PREFIX."thx WHERE pid='{$pid}' LIMIT 1) WHEN 0 THEN thxpost-1 ELSE thxpost END WHERE uid='{$uid}' LIMIT 1",
@@ -1334,7 +1650,12 @@ function del_thank(&$pid)
 function deletepost_edit($pid)
 {
 	global $db;
-	
+
+	if(!$mybb->settings['thx_active'] || !empty($session->is_spider))
+	{
+		return false;
+	}
+		
 	$pid = intval($pid);
 	$q = $db->simple_select("thx", "uid, adduid", "pid='{$pid}'");
 	
@@ -1630,15 +1951,37 @@ function my_check_proceed($current, $finish, $next_page, $per_page, $name_chunk,
 		echo "<p class=\"buttons\">\n";
 		echo $form->generate_submit_button($db->escape_string($lang->thx_confirm_button), array('class' => 'button_yes'));
 		echo "</p>\n";
-		echo "<div style=\"float: right; color: #424242;\">".$db->escape_string($lang->thx_confirm_page)." $next_page\n";
+		echo "<div style=\"float: right; color: #424242;\">".$db->escape_string($lang->thx_confirm_page)." {$next_page}\n";
 		echo "<br />\n";
-		echo $db->escape_string($lang->thx_confirm_elements)." $total</div>";
+		echo $db->escape_string($lang->thx_confirm_elements)." {$total}</div>";
 		echo "<br />\n";
 	    echo "<br />\n";
 		echo "</div>\n";		
 		$form->end();
 		$page->output_footer();
 		exit;
+	}
+}
+
+function thx_edit_group()
+{
+	global $run_module, $form_container, $form, $mybb, $lang;
+		$lang->load("thx", false, true);
+		
+		$form_container = new FormContainer($lang->thx_admin_thx_group);
+		$thx_options = array();
+		$thx_options[] = $lang->thx_admin_thx_group_opt1.$form->generate_text_box('thx_max_ammount', $mybb->input['thx_max_ammount'], array('id' => 'max_thx_ammount', 'class' => 'field50'));
+		$form_container->output_row($lang->messages, '', '<div class="group_settings_bit">'.implode('</div><div class="group_settings_bit">', $thx_options).'</div>');
+		$form_container->end();
+
+}
+
+function thx_edit_group_do()
+{
+	global $updated_group, $mybb;
+	if($mybb->input['gid'] != 1)
+	{
+		$updated_group['thx_max_ammount'] = $mybb->input['thx_max_ammount'];
 	}
 }
 

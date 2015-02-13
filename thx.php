@@ -1,14 +1,13 @@
 <?php
 
-/*
- * ThankYou MyBB System + Rep + MyAlerts plugin
- * Author: Dark Neo
- * Copyright: © 2013 Dark Neo, All Rights Reserved
- * Versión: 2.3.2
- * Website: http://darkneo.skn1.com
- *
+/**
+ * Thank You MyBB System + MyAlerts + rep xD v 2.4.1
+ * Upgrade for MyBB 1.6.x Testes since 1.6.3 - (actually 1.6.13)
+ * contact: neogeoman@gmail.com
+ * Website: http://www.mybb.com
+ * Author:  Dark Neo
  */
-
+ 
 define("IN_MYBB", 1);
 $filename = substr($_SERVER['SCRIPT_NAME'], -strpos(strrev($_SERVER['SCRIPT_NAME']), "/"));
 define('THIS_SCRIPT', $filename);

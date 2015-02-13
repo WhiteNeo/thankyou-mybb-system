@@ -1,50 +1,56 @@
 /**
- * Thank You MyBB System + MyAlerts + rep xD v 2.3.2
- * Upgrade for MyBB 1.6.x (actually 1.6.12)
- * darkneo.skn1.com
- * Author: Dark Neo
+ * Thank You MyBB System + MyAlerts + rep xD v 2.4
+ * Upgrade for MyBB 1.6.x Testes since 1.6.3 - (actually 1.6.13)
+ * contact: neogeoman@gmail.com
+ * Website: http://www.mybb.com
+ * Author:  Dark Neo
  */
 
 var pid=-1;
 var spinner=null;
 function thx_common(response)
 {
-	try
-	{
-		xml=response.responseXML;
-		lin=document.getElementById('a'+pid);
-		if (lin) {				 
-			list = document.getElementById('thx_list' + pid);
-			list.innerHTML = xml.getElementsByTagName('list').item(0).firstChild.data;
-			thxcount = document.getElementById('thx_thanked_' + pid);
-			thxcount.innerHTML = xml.getElementsByTagName('thxcount').item(0).firstChild.data;															
-			button = document.getElementById('sp_' + pid);
-			button.innerHTML = xml.getElementsByTagName('button').item(0).firstChild.data;	
-			counter = document.getElementById('counter' + pid);
-			counter.innerHTML = xml.getElementsByTagName('count').item(0).firstChild.data;
-            post = document.getElementById('thxpid_' + pid);
-			post.innerHTML = xml.getElementsByTagName('post').item(0).firstChild.data;
-		}
-		else
-		{
-			lin.innerHTML="";
-			lin.onclick=null;
-			lin.href="";
-			lin = null;		
-		}
-	}
-	catch(err)
-	{
-		alert("an error has ocurred")
-		alert(err);
-	}
-	finally
-	{
+	if(error = response.responseText.match(/<error>(.*)<\/error>/)){
+		alert("Thanks system found an error.\n\n" + error[1]);		
 		spinner.destroy();
-		spinner=null;
-		return lin;
+		spinner=null;		
+	}	
+	else{
+		try
+		{
+			xml=response.responseXML;
+			lin=document.getElementById('a'+pid);
+			if (lin) {				 
+				list = document.getElementById('thx_list' + pid);
+				list.innerHTML = xml.getElementsByTagName('list').item(0).firstChild.data;
+				thxcount = document.getElementById('thx_thanked_' + pid);
+				thxcount.innerHTML = xml.getElementsByTagName('thxcount').item(0).firstChild.data;															
+				button = document.getElementById('sp_' + pid);
+				button.innerHTML = xml.getElementsByTagName('button').item(0).firstChild.data;	
+				counter = document.getElementById('counter' + pid);
+				counter.innerHTML = xml.getElementsByTagName('count').item(0).firstChild.data;
+				post = document.getElementById('thxpid_' + pid);
+				post.innerHTML = xml.getElementsByTagName('post').item(0).firstChild.data;
+			}
+			else
+			{
+				lin.innerHTML="";
+				lin.onclick=null;
+				lin.href="";
+				lin = null;		
+			}
+		}
+		catch(error)
+		{
+			console.log(error);
+		}
+		finally
+		{
+			spinner.destroy();
+			spinner=null;
+			return lin;
+		}
 	}
-	
 }
 function thx_action(response)
 {
@@ -64,8 +70,6 @@ function rthx_action(response)
 		lin.onclick = new Function("", "return thx(" + pid + ");");
 		lin.href = 'showthread.php?action=thank&pid=' + pid;
 	}
-	
-	
 }
 
 function thx(id)

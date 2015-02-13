@@ -2,13 +2,19 @@
 /**
  * Author: Dark Neo
  * Plugin: Thanks System
- * Version: 2.3.2
+ * Version: 2.4.2
  * Plugin Language File: english
  */
 
 $l['thx_title'] = "Thanks system";
 $l['thx_desc'] = "Add a new button on forums where apply to thanks users";
 $l['thx_config'] = "Configure Plugin";
+$l['thx_config_alerts'] = "You have installed MyAlerts but you have to configure propertly to use with this plugin...";
+$l['thx_config_alerts_thx'] = "Thank you mybb plugin enabled and already to use (MyAlerts 1.05 or better was detected)";
+$l['thx_config_alerts_none'] = "Thank you mybb plugin it's already to be used, you need (<a href=\"https://github.com/euantorano/MyAlerts/archive/master.zip\">Download MyAlerts 1.05 or better</a>) your version is out of date and may does not work propertly...";
+$l['thx_config_alerts_force_all'] = "Force enable alerts for all users";
+$l['thx_admin_thx_group'] = "Thank you system adjustments";
+$l['thx_admin_thx_group_opt1'] = "Thanks ammount per day by usergroup:  ";
 $l['thx_disabled'] = "Plugin Disabled";
 $l['thx_opt_title'] = "[Plugin] Thanks system";
 $l['thx_opt_desc'] = "Configuration options";
@@ -36,10 +42,11 @@ $l['thx_gid_desc'] = "Usergrpus by id, who can see without thanks contents insid
 $l['thx_ngid_title'] = "Usergroups who can not see hide tag content by default [???]";
 $l['thx_ngid_desc'] = "Usergroups who can not see any hide tag contents. <div style=\"float:right;\"><b>Ex: 1,5,7(Guest, Acount whitout activation, Banned users)</b></div>";
 $l['thx_rep_title'] = "Enable reputation integration?";
-$l['thx_rep_desc'] = "Use reputation system on thanks, if you enable 3rd option you have to install MyAlerts plugin from euantor";
+$l['thx_rep_desc'] = "Use reputation system on thanks, if you enable 2nd or 4th option you have to install MyAlerts plugin from Euantor";
 $l['thx_rep_op1'] = "Disabled";
-$l['thx_rep_op2'] = "Integration with Reputation";
-$l['thx_rep_op3'] = "Integration with Reputation + MyAlerts";
+$l['thx_rep_op2'] = "Integration with MyAlerts";
+$l['thx_rep_op3'] = "Integration with Reputation";
+$l['thx_rep_op4'] = "Integration with Reputation + MyAlerts";
 $l['thx_recount'] = "Recount Thanks";
 $l['thx_can_recount'] = "Enable Recount Thanks";
 $l['thx_recount_do'] = "Thanks Recount";
@@ -55,8 +62,8 @@ $l['thx_confirm_next'] = "<p>Click on CONTINUE to do thanks recount.</p><p>If yo
 $l['thx_confirm_button'] = "Continue";
 $l['thx_confirm_page'] = "page #: ";
 $l['thx_confirm_elements'] = "Elements to Proccess";
-$l['thx_update_psuccess'] = "Thanks Reconstruction Succed";
-$l['thx_update_tsuccess'] = "Thanks Recount Proccess Succed";
+$l['thx_update_psuccess'] = "Thanks Reconstruction Succeed";
+$l['thx_update_tsuccess'] = "Thanks Recount Proccess Succeed";
 $l['thx_thankyou'] = "Thanks for this post";
 $l['thx_alerts_title'] = "Add an alert when someone has thanked a post?";
 $l['thx_alerts_title_desc'] = "If you enable this, everytime you have a new notificaction when someone has thanked your posts (Require Thanks System plugin)";

@@ -1,8 +1,9 @@
 /**
- * Thank You MyBB System + MyAlerts + rep xD v 2.3.3
- * Upgrade for MyBB 1.6.x (actually 1.6.12)
- * darkneo.skn1.com
- * Author: Dark Neo
+ * Thank You MyBB System + MyAlerts + rep xD v 2.4
+ * Upgrade for MyBB 1.6.x Testes since 1.6.3 - (actually 1.6.13)
+ * contact: neogeoman@gmail.com
+ * Website: http://www.mybb.com
+ * Author:  Dark Neo
  */
 
 messageEditor = Class.create(messageEditor,	{

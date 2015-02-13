@@ -2,13 +2,19 @@
 /**
  * Autor: Dark Neo
  * Plugin: Sistema de Agradecimientos
- * Versión: 2.3.2
+ * Versión: 2.4.2
  * Archivo de Idioma del Plugin: espanol
  */
 
 $l['thx_title'] = "Sistema de agradecimientos";
 $l['thx_desc'] = "Agrega un botón para dar gracias en los foros que aplica, a los temas de usuarios";
 $l['thx_config'] = "Configurar Plugin";
+$l['thx_config_alerts'] = "Se ha detectado que tienes MyAlerts, pero no está bien configurado aún...";
+$l['thx_config_alerts_thx'] = "El plugin de agradecimientos está listo para ser utilizado (Se detecto MyAlerts 1.05 o mayor)";
+$l['thx_config_alerts_none'] = "El plugin de agradecimientos está listo para ser utilizado, necesitas (<a href=\"https://github.com/euantorano/MyAlerts/archive/master.zip\">Descargar MyAlerts 1.05 o mayor</a>) con la versión actual no funciona adecuadamente ya que se modifico todo el core de el sistema...";
+$l['thx_config_alerts_force_all'] = "Forzar alertas a todos los usuarios";
+$l['thx_admin_thx_group'] = "Ajustes del sistema de agradecimientos";
+$l['thx_admin_thx_group_opt1'] = "Agradecimientos permitidos por día para este grupo de usuarios:  ";
 $l['thx_disabled'] = "Plugin Desactivado";
 $l['thx_opt_title'] = "[Plugin] Sistema de Agradecimientos";
 $l['thx_opt_desc'] = "Configuración del plugin";
@@ -40,10 +46,11 @@ $l['thx_gid_desc'] = "Id de los grupos de usuarios que pueden ver todo el conten
 $l['thx_ngid_title'] = "Grupos que no pueden mirar los contenidos de la etiqueta [???]";
 $l['thx_ngid_desc'] = "Id de los grupos de usuarios que no pueden ver el contenido separados por coma. <div style=\"float:right;\"><b>Ej: 1,5,7(Invitado, Cuenta por activar, Bloqueado)</b></div>";
 $l['thx_rep_title'] = "Integrar este sistema a la reputación?";
-$l['thx_rep_desc'] = "Habilitar o no el sistema de reputación de MyBB al agradecer a un tema, para la tercera opción forzosamete necesitas instalar MyAlerts de euantor o te dará error";
+$l['thx_rep_desc'] = "Habilitar o no el sistema de reputación de MyBB al agradecer a un tema, para la segunda y cuarta opción forzosamete necesitas instalar MyAlerts de Euantor o te dará error";
 $l['thx_rep_op1'] = "Deshabilitar";
-$l['thx_rep_op2'] = "Integrar reputacion";
-$l['thx_rep_op3'] = "Integrar reputacion + MyAlerts";
+$l['thx_rep_op2'] = "Integrar MyAlerts";
+$l['thx_rep_op3'] = "Integrar Reputacion";
+$l['thx_rep_op4'] = "Integrar Reputacion + MyAlerts";
 $l['thx_recount'] = "Recontar Agradecimientos";
 $l['thx_can_recount'] = "Habilitar Reconteo de Agradecimientos";
 $l['thx_recount_do'] = "Reconteo de Agradecimientos";
