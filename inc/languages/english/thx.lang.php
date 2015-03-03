@@ -11,7 +11,7 @@ $l['thx_givenby'] = "Thanked by: ";
 $l['thx_thanked_count'] = "Thanked: <b><a href=\"thx.php?thanked={2}\" id=\"thx_thanked_{3}\">{1}</a></b>";
 $l['thx_thank_count'] = "Thanks: <b><a href=\"thx.php?thanks={2}\" id=\"thx_thanks_{3}\">{1}</a></b>";
 $l['thx_thank_details'] = "You have <b>{1}</b> thanks in <b>{2}</b> posts, and you give <b>{3}</b> thanks";
-$l['thx_thank_details_extra'] "<br />You've used {1} thanks of {2} you can use it today";
+$l['thx_thank_details_extra'] = "<br />You've used {1} thanks of {2} you can use it today";
 $l['thx_exceed'] = "You have exceed {1} max thanks per day";
 $l['thx_remove'] = "Unthank";
 $l['thx_comma'] = ", ";
@@ -41,4 +41,3 @@ $l['thx_cant_thank'] = 'You can\'t use thanks system';
 $l['thx_not_given'] = 'There are no thanks given';
 $l['thx_not_post'] = 'There are no thanks in this post';
 $l['thx_not_received'] = 'There are no thanks received';
-?>
